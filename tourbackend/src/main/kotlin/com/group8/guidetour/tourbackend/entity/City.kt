@@ -1,3 +1,5 @@
+package com.group8.guidetour.tourbackend.entity
+
 import jakarta.persistence.*
 
 @Entity

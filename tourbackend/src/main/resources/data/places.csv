@@ -1,0 +1,13 @@
+name,type,latitude,longitude,isFree,cityName
+Eiffel Tower,monument,48.8584,2.2945,false,Paris
+Louvre Museum,museum,48.8606,2.3376,true,Paris
+Brandenburg Gate,monument,52.5163,13.3777,true,Berlin
+Colosseum,monument,41.8902,12.4922,false,Rome
+Vatican Museums,museum,41.9065,12.4536,false,Rome
+Royal Palace,monument,40.4179,-3.7143,true,Madrid
+Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna
+Anne Frank House,museum,52.3752,4.8838,false,Amsterdam
+Charles Bridge,bridge,50.0865,14.4114,true,Prague
+Buda Castle,palace,47.4966,19.0399,true,Budapest
+Old Town,area,52.2299,21.0067,true,Warsaw
+Belém Tower,monument,38.6916,-9.2166,true,Lisbon
