@@ -19,6 +19,10 @@ class CsvDataImporter(
     private val logger = LoggerFactory.getLogger(CsvDataImporter::class.java)
 
     override fun run(vararg args: String?) {
+        if (cityRepository.count() > 0) {
+            logger.info("Cities already imported, skipping import.")
+            return
+        }
         val cityMap = mutableMapOf<String, City>()
         // Read and save cities
         try {

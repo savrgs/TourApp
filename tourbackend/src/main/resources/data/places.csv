@@ -1,13 +1,33 @@
 name,type,latitude,longitude,isFree,cityName
 Eiffel Tower,monument,48.8584,2.2945,false,Paris
 Louvre Museum,museum,48.8606,2.3376,true,Paris
+Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris
+Montmartre,neighborhood,48.8867,2.3431,true,Paris
 Brandenburg Gate,monument,52.5163,13.3777,true,Berlin
+Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin
+Museum Island,museum,52.5169,13.4010,false,Berlin
 Colosseum,monument,41.8902,12.4922,false,Rome
+Trevi Fountain,fountain,41.9009,12.4833,true,Rome
+Pantheon,temple,41.8986,12.4768,true,Rome
 Vatican Museums,museum,41.9065,12.4536,false,Rome
 Royal Palace,monument,40.4179,-3.7143,true,Madrid
+Plaza Mayor,square,40.4155,-3.7074,true,Madrid
+El Retiro Park,park,40.4153,-3.6844,true,Madrid
 Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna
+Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna
+St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna
 Anne Frank House,museum,52.3752,4.8838,false,Amsterdam
+Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam
+Vondelpark,park,52.3584,4.8685,true,Amsterdam
 Charles Bridge,bridge,50.0865,14.4114,true,Prague
+Prague Castle,castle,50.0900,14.4006,false,Prague
+Old Town Square,square,50.0870,14.4208,true,Prague
 Buda Castle,palace,47.4966,19.0399,true,Budapest
+Fisherman’s Bastion,lookout,47.5023,19.0347,true,Budapest
+Heroes’ Square,monument,47.5146,19.0770,true,Budapest
 Old Town,area,52.2299,21.0067,true,Warsaw
+Royal Castle,castle,52.2470,21.0136,false,Warsaw
+Lazienki Park,park,52.2149,21.0347,true,Warsaw
 Belém Tower,monument,38.6916,-9.2166,true,Lisbon
+Jerónimos Monastery,monastery,38.6981,-9.2065,false,Lisbon
+Alfama,neighborhood,38.7139,-9.1316,true,Lisbon
