@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -19,7 +20,7 @@
         android:usesCleartextTraffic="true">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA8UE1Ku7G1bkAImJnnjSR8onAOFxprJMQ" />
+            android:value="AIzaSyA8UE1Ku761bkAImJnnjSR8onAOFxprJMQ" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,8 +1,11 @@
 package com.example.tourfrontend
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,16 +17,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,16 +40,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.tourfrontend.ui.theme.TourfrontendTheme
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.compose.*
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
 import com.google.android.gms.maps.MapsInitializer
 
@@ -256,13 +266,28 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
     val places by viewModel.places.collectAsState()
     val loading by viewModel.loading.collectAsState()
 
-    // Location permission state
-    var locationPermissionGranted by remember { mutableStateOf(false) }
+    // Location services
     val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
+    var locationPermissionGranted by remember { mutableStateOf(false) }
+    
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted -> locationPermissionGranted = granted }
+        onResult = { granted -> 
+            locationPermissionGranted = granted
+            if (granted) {
+                // Get user location after permission is granted
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        userLocation = location
+                    }
+                }
+            }
+        }
     )
+
+    // Check and request location permission
     LaunchedEffect(Unit) {
         val granted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_FINE_LOCATION
@@ -270,6 +295,11 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
         locationPermissionGranted = granted
         if (!granted) {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            // Get user location if permission already granted
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                userLocation = location
+            }
         }
     }
 
@@ -304,10 +334,29 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     Spacer(modifier = Modifier.height(8.dp))
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(places ?: emptyList()) { place ->
-                            ListItem(
-                                headlineContent = { Text(place.name) },
-                                supportingContent = { 
-                                    Text("${place.type} - ${if (place.isFree) "Free" else "Paid"}")
+                            PlaceCard(
+                                place = place,
+                                userLocation = userLocation,
+                                onNavigate = { destinationLat, destinationLon ->
+                                    if (userLocation != null) {
+                                        val uri = Uri.parse(
+                                            "https://www.google.com/maps/dir/?api=1" +
+                                            "&origin=${userLocation!!.latitude},${userLocation!!.longitude}" +
+                                            "&destination=$destinationLat,$destinationLon" +
+                                            "&travelmode=walking"
+                                        )
+                                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                                        intent.setPackage("com.google.android.apps.maps")
+                                        try {
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            // Fallback to browser if Google Maps app is not installed
+                                            val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+                                            context.startActivity(browserIntent)
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             )
                         }
@@ -315,6 +364,117 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlaceCard(
+    place: PlaceDto,
+    userLocation: android.location.Location?,
+    onNavigate: (Double, Double) -> Unit
+) {
+    val context = LocalContext.current
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            // Place information with icon
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Place type icon
+                Text(
+                    text = getPlaceTypeIcon(place.type),
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+                
+                // Place details
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = place.name,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 28.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "${place.type} • ${if (place.isFree) "Free" else "Paid"}",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Navigate button
+            Button(
+                onClick = { onNavigate(place.latitude, place.longitude) },
+                modifier = Modifier.align(Alignment.End),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3) // Blue color
+                ),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Navigation,
+                    contentDescription = "Navigate to ${place.name}",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Navigate",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun getPlaceTypeIcon(placeType: String): String {
+    return when (placeType.lowercase()) {
+        "museum" -> "🏛️"
+        "church", "cathedral", "temple" -> "⛪"
+        "monument", "statue" -> "🗽"
+        "park", "garden" -> "🌳"
+        "restaurant", "cafe" -> "🍽️"
+        "hotel", "accommodation" -> "🏨"
+        "shopping", "mall", "market" -> "🛍️"
+        "theater", "cinema" -> "🎭"
+        "library" -> "📚"
+        "hospital", "clinic" -> "🏥"
+        "school", "university" -> "🎓"
+        "airport" -> "✈️"
+        "train station", "bus station" -> "🚉"
+        "beach" -> "🏖️"
+        "mountain", "hill" -> "⛰️"
+        "lake", "river" -> "🏞️"
+        "castle", "palace" -> "🏰"
+        "bridge" -> "🌉"
+        "tower" -> "🗼"
+        else -> "📍"
     }
 }
 
