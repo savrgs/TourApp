@@ -1,8 +1,12 @@
 package com.example.tourfrontend
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,6 +35,16 @@ import androidx.navigation.navArgument
 import com.example.tourfrontend.ui.theme.TourfrontendTheme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
+import android.util.Log
+import com.google.android.gms.maps.MapsInitializer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -242,6 +256,23 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
     val places by viewModel.places.collectAsState()
     val loading by viewModel.loading.collectAsState()
 
+    // Location permission state
+    var locationPermissionGranted by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> locationPermissionGranted = granted }
+    )
+    LaunchedEffect(Unit) {
+        val granted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        locationPermissionGranted = granted
+        if (!granted) {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
     LaunchedEffect(cityId) {
         viewModel.fetchPlacesForCity(cityId)
     }
@@ -265,17 +296,72 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
             if (loading) {
                 Text("Loading places...", modifier = Modifier.fillMaxSize())
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(places ?: emptyList()) { place ->
-                        ListItem(
-                            headlineContent = { Text(place.name) },
-                            supportingContent = { 
-                                Text("${place.type} - ${if (place.isFree) "Free" else "Paid"}")
-                            }
-                        )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    MapViewComponent(
+                        places = places ?: emptyList(),
+                        showUserLocation = locationPermissionGranted
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(places ?: emptyList()) { place ->
+                            ListItem(
+                                headlineContent = { Text(place.name) },
+                                supportingContent = { 
+                                    Text("${place.type} - ${if (place.isFree) "Free" else "Paid"}")
+                                }
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun MapViewComponent(
+    places: List<PlaceDto>,
+    showUserLocation: Boolean
+) {
+    val singapore = LatLng(1.3521, 103.8198) // fallback location
+    val firstPlaceLatLng = places.firstOrNull()?.let { LatLng(it.latitude, it.longitude) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition(
+            firstPlaceLatLng ?: singapore,
+            12f,
+            0f,
+            0f
+        )
+    }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(Unit) {
+        try {
+            val result = MapsInitializer.initialize(context)
+            Log.d("MapViewComponent", "MapsInitializer.initialize result: $result")
+        } catch (e: Exception) {
+            Log.e("MapViewComponent", "MapsInitializer.initialize failed", e)
+        }
+    }
+
+    GoogleMap(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(isMyLocationEnabled = showUserLocation),
+        uiSettings = MapUiSettings(zoomControlsEnabled = true),
+        onMapLoaded = {
+            Log.d("MapViewComponent", "GoogleMap loaded successfully")
+        }
+    ) {
+        for (place in places) {
+            Marker(
+                state = MarkerState(position = LatLng(place.latitude, place.longitude)),
+                title = place.name,
+                snippet = place.type
+            )
         }
     }
 }
