@@ -332,6 +332,77 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                         showUserLocation = locationPermissionGranted
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Plan Tour Route Button
+                    if (places?.isNotEmpty() == true) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (userLocation != null) {
+                                        val sortedPlaces = places!!.sortedBy { place ->
+                                            val placeLocation = android.location.Location("").apply {
+                                                latitude = place.latitude
+                                                longitude = place.longitude
+                                            }
+                                            userLocation!!.distanceTo(placeLocation)
+                                        }
+                                        
+                                        if (sortedPlaces.size >= 2) {
+                                            val origin = "${userLocation!!.latitude},${userLocation!!.longitude}"
+                                            val destination = "${sortedPlaces.last().latitude},${sortedPlaces.last().longitude}"
+                                            val waypoints = sortedPlaces.dropLast(1).joinToString("|") { 
+                                                "${it.latitude},${it.longitude}" 
+                                            }
+                                            
+                                            val uri = Uri.parse(
+                                                "https://www.google.com/maps/dir/?api=1" +
+                                                "&origin=$origin" +
+                                                "&destination=$destination" +
+                                                "&waypoints=$waypoints" +
+                                                "&travelmode=walking"
+                                            )
+                                            
+                                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                                            intent.setPackage("com.google.android.apps.maps")
+                                            try {
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                // Fallback to browser if Google Maps app is not installed
+                                                val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+                                                context.startActivity(browserIntent)
+                                            }
+                                        } else {
+                                            Toast.makeText(context, "Need at least 2 places for a tour route", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3) // Blue color
+                                ),
+                                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Navigation,
+                                    contentDescription = "Plan Tour Route",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Plan Tour Route",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(places ?: emptyList()) { place ->
                             PlaceCard(
@@ -431,7 +502,7 @@ fun PlaceCard(
                 onClick = { onNavigate(place.latitude, place.longitude) },
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3) // Blue color
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3)
                 ),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
                 shape = MaterialTheme.shapes.small
