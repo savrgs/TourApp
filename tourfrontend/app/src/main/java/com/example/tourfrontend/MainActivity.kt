@@ -42,19 +42,14 @@ import androidx.navigation.navArgument
 import com.example.tourfrontend.ui.theme.TourfrontendTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.compose.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
 import com.google.android.gms.maps.MapsInitializer
+import androidx.compose.material.icons.filled.CheckCircle
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -265,6 +260,14 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
 
     val places by viewModel.places.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    
+    // Selected places state
+    var selectedPlaces by remember { mutableStateOf<List<PlaceDto>>(emptyList()) }
+    
+    // Update selected places when places data changes
+    LaunchedEffect(places) {
+        selectedPlaces = places ?: emptyList()
+    }
 
     // Location services
     val context = LocalContext.current
@@ -333,6 +336,41 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     
+                    // Selection Summary
+                    if (places?.isNotEmpty() == true) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Selected",
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "${selectedPlaces.size} of ${places!!.size} places selected for route",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    
                     // Plan Tour Route Button
                     if (places?.isNotEmpty() == true) {
                         Box(
@@ -342,15 +380,15 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                             Button(
                                 onClick = {
                                     if (userLocation != null) {
-                                        val sortedPlaces = places!!.sortedBy { place ->
-                                            val placeLocation = android.location.Location("").apply {
-                                                latitude = place.latitude
-                                                longitude = place.longitude
+                                        if (selectedPlaces.size >= 2) {
+                                            val sortedPlaces = selectedPlaces.sortedBy { place ->
+                                                val placeLocation = android.location.Location("").apply {
+                                                    latitude = place.latitude
+                                                    longitude = place.longitude
+                                                }
+                                                userLocation!!.distanceTo(placeLocation)
                                             }
-                                            userLocation!!.distanceTo(placeLocation)
-                                        }
-                                        
-                                        if (sortedPlaces.size >= 2) {
+                                            
                                             val origin = "${userLocation!!.latitude},${userLocation!!.longitude}"
                                             val destination = "${sortedPlaces.last().latitude},${sortedPlaces.last().longitude}"
                                             val waypoints = sortedPlaces.dropLast(1).joinToString("|") { 
@@ -375,7 +413,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                                                 context.startActivity(browserIntent)
                                             }
                                         } else {
-                                            Toast.makeText(context, "Need at least 2 places for a tour route", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Please select at least two places to plan a route", Toast.LENGTH_SHORT).show()
                                         }
                                     } else {
                                         Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
@@ -408,6 +446,14 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                             PlaceCard(
                                 place = place,
                                 userLocation = userLocation,
+                                isSelected = selectedPlaces.contains(place),
+                                onSelectionChanged = { isSelected ->
+                                    selectedPlaces = if (isSelected) {
+                                        selectedPlaces + place
+                                    } else {
+                                        selectedPlaces - place
+                                    }
+                                },
                                 onNavigate = { destinationLat, destinationLon ->
                                     if (userLocation != null) {
                                         val uri = Uri.parse(
@@ -443,6 +489,8 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
 fun PlaceCard(
     place: PlaceDto,
     userLocation: android.location.Location?,
+    isSelected: Boolean,
+    onSelectionChanged: (Boolean) -> Unit,
     onNavigate: (Double, Double) -> Unit
 ) {
     val context = LocalContext.current
@@ -462,7 +510,7 @@ fun PlaceCard(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // Place information with icon
+            // Place information with icon and selection checkbox
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -493,6 +541,16 @@ fun PlaceCard(
                         lineHeight = 20.sp
                     )
                 }
+                
+                // Selection checkbox
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = onSelectionChanged,
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary,
+                        uncheckedColor = MaterialTheme.colorScheme.outline
+                    )
+                )
             }
             
             Spacer(modifier = Modifier.height(16.dp))
