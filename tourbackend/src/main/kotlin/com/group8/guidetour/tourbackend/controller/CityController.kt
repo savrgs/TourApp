@@ -31,7 +31,10 @@ class CityController(
                 type = place.type,
                 latitude = place.latitude,
                 longitude = place.longitude,
-                isFree = place.isFree
+                isFree = place.isFree,
+                cityName = place.city.name,
+                description = place.description,
+                photoUrl = place.photoUrl
             )
         }
 }

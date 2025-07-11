@@ -6,5 +6,8 @@ data class PlaceDTO(
     val type: String,
     val latitude: Double,
     val longitude: Double,
-    val isFree: Boolean
+    val isFree: Boolean,
+    val cityName: String,
+    val description: String,
+    val photoUrl: String? = null
 ) 

@@ -540,6 +540,14 @@ fun PlaceCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = place.description,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 18.sp,
+                        maxLines = 5
+                    )
                 }
                 
                 // Selection checkbox

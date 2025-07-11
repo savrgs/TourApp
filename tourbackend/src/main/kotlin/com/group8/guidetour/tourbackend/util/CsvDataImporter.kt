@@ -4,6 +4,7 @@ import com.group8.guidetour.tourbackend.entity.City
 import com.group8.guidetour.tourbackend.entity.Place
 import com.group8.guidetour.tourbackend.repository.CityRepository
 import com.group8.guidetour.tourbackend.repository.PlaceRepository
+import com.opencsv.CSVReader
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.core.io.ClassPathResource
@@ -50,28 +51,28 @@ class CsvDataImporter(
         // Read and save places
         try {
             val placeResource = ClassPathResource("data/places.csv")
-            BufferedReader(InputStreamReader(placeResource.inputStream)).use { reader ->
-                reader.readLine() // skip header
-                val places = reader.lineSequence().mapNotNull { line ->
-                    val parts = line.split(",")
-                    if (parts.size >= 6) {
-                        val cityName = parts[5].trim()
+            CSVReader(InputStreamReader(placeResource.inputStream)).use { reader ->
+                reader.readNext() // skip header
+                val places = reader.readAll().mapNotNull { parts ->
+                    if (parts.size >= 7) {
+                        val cityName = parts[5].trim().removeSurrounding("\"")
                         val city = cityMap[cityName]
                         if (city == null) {
-                            logger.warn("City not found for place: {}", line)
+                            logger.warn("City not found for place: {}", parts.joinToString(","))
                             null
                         } else {
                             Place(
-                                name = parts[0].trim(),
-                                type = parts[1].trim(),
+                                name = parts[0].trim().removeSurrounding("\""),
+                                type = parts[1].trim().removeSurrounding("\""),
                                 latitude = parts[2].toDoubleOrNull() ?: 0.0,
                                 longitude = parts[3].toDoubleOrNull() ?: 0.0,
                                 isFree = parts[4].trim().toBooleanStrictOrNull() ?: false,
+                                description = parts[6].trim().removeSurrounding("\""),
                                 city = city
                             )
                         }
                     } else null
-                }.toList()
+                }
                 placeRepository.saveAll(places)
             }
         } catch (e: Exception) {

@@ -13,6 +13,8 @@ data class Place(
     val latitude: Double,
     val longitude: Double,
     val isFree: Boolean,
+    var description: String = "",
+    var photoUrl: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     val city: City

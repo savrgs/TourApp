@@ -1,33 +1,33 @@
-name,type,latitude,longitude,isFree,cityName
-Eiffel Tower,monument,48.8584,2.2945,false,Paris
-Louvre Museum,museum,48.8606,2.3376,true,Paris
-Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris
-Montmartre,neighborhood,48.8867,2.3431,true,Paris
-Brandenburg Gate,monument,52.5163,13.3777,true,Berlin
-Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin
-Museum Island,museum,52.5169,13.4010,false,Berlin
-Colosseum,monument,41.8902,12.4922,false,Rome
-Trevi Fountain,fountain,41.9009,12.4833,true,Rome
-Pantheon,temple,41.8986,12.4768,true,Rome
-Vatican Museums,museum,41.9065,12.4536,false,Rome
-Royal Palace,monument,40.4179,-3.7143,true,Madrid
-Plaza Mayor,square,40.4155,-3.7074,true,Madrid
-El Retiro Park,park,40.4153,-3.6844,true,Madrid
-Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna
-Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna
-St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna
-Anne Frank House,museum,52.3752,4.8838,false,Amsterdam
-Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam
-Vondelpark,park,52.3584,4.8685,true,Amsterdam
-Charles Bridge,bridge,50.0865,14.4114,true,Prague
-Prague Castle,castle,50.0900,14.4006,false,Prague
-Old Town Square,square,50.0870,14.4208,true,Prague
-Buda Castle,palace,47.4966,19.0399,true,Budapest
-Fisherman’s Bastion,lookout,47.5023,19.0347,true,Budapest
-Heroes’ Square,monument,47.5146,19.0770,true,Budapest
-Old Town,area,52.2299,21.0067,true,Warsaw
-Royal Castle,castle,52.2470,21.0136,false,Warsaw
-Lazienki Park,park,52.2149,21.0347,true,Warsaw
-Belém Tower,monument,38.6916,-9.2166,true,Lisbon
-Jerónimos Monastery,monastery,38.6981,-9.2065,false,Lisbon
-Alfama,neighborhood,38.7139,-9.1316,true,Lisbon
+name,type,latitude,longitude,isFree,cityName,description
+Eiffel Tower,monument,48.8584,2.2945,false,Paris,"Iconic wrought-iron tower offering panoramic views of Paris."
+Louvre Museum,museum,48.8606,2.3376,true,Paris,"World-renowned museum housing the Mona Lisa and classical art."
+Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris,"Famous Gothic cathedral known for its architecture and history."
+Montmartre,neighborhood,48.8867,2.3431,true,Paris,"Historic hilltop area with artistic heritage and the Sacré-Cœur."
+Brandenburg Gate,monument,52.5163,13.3777,true,Berlin,"Neoclassical gate symbolizing German unity."
+Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin,"Preserved site of the former Berlin Wall with exhibits."
+Museum Island,museum,52.5169,13.4010,false,Berlin,"UNESCO site with multiple museums and art collections."
+Colosseum,monument,41.8902,12.4922,false,Rome,"Ancient Roman amphitheater once hosting gladiator battles."
+Trevi Fountain,fountain,41.9009,12.4833,true,Rome,"Baroque fountain where visitors toss coins for good luck."
+Pantheon,temple,41.8986,12.4768,true,Rome,"Well-preserved Roman temple with a massive dome."
+Vatican Museums,museum,41.9065,12.4536,false,Rome,"Art-filled museums including the Sistine Chapel."
+Royal Palace,monument,40.4179,-3.7143,true,Madrid,"Grand official residence of the Spanish royal family."
+Plaza Mayor,square,40.4155,-3.7074,true,Madrid,"Huge square in the center of Madrid with cafés and shops."
+El Retiro Park,park,40.4153,-3.6844,true,Madrid,"Expansive park with gardens, a lake, and sculptures."
+Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna,"Baroque palace with gardens, zoo, and royal history."
+Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna,"Palace complex with Austrian art collections."
+St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna,"Gothic cathedral and iconic landmark of Vienna."
+Anne Frank House,museum,52.3752,4.8838,false,Amsterdam,"Museum dedicated to Anne Frank and WWII history."
+Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam,"Museum with Dutch art from Rembrandt to Vermeer."
+Vondelpark,park,52.3584,4.8685,true,Amsterdam,"Popular urban park with green space and sculptures."
+Charles Bridge,bridge,50.0865,14.4114,true,Prague,"Historic bridge with baroque statues spanning the Vltava."
+Prague Castle,castle,50.0900,14.4006,false,Prague,"Medieval castle complex and the seat of the Czech president."
+Old Town Square,square,50.0870,14.4208,true,Prague,"Colorful historic square with the Astronomical Clock."
+Buda Castle,palace,47.4966,19.0399,true,Budapest,"Historic castle and palace complex of Hungarian kings."
+Fisherman’s Bastion,lookout,47.5023,19.0347,true,Budapest,"Neo-Romanesque terrace with panoramic city views."
+Heroes’ Square,monument,47.5146,19.0770,true,Budapest,"Major square featuring statues of Hungarian leaders."
+Old Town,area,52.2299,21.0067,true,Warsaw,"Historic district rebuilt after WWII with cobbled streets."
+Royal Castle,castle,52.2470,21.0136,false,Warsaw,"Former royal residence now housing art and history exhibits."
+Lazienki Park,park,52.2149,21.0347,true,Warsaw,"Large park with palaces, lakes, and peacocks."
+Belém Tower,monument,38.6916,-9.2166,true,Lisbon,"Fortified tower symbolizing Portugal’s Age of Discoveries."
+Jerónimos Monastery,monastery,38.6981,-9.2065,false,Lisbon,"Impressive Gothic monastery and UNESCO site."
+Alfama,neighborhood,38.7139,-9.1316,true,Lisbon,"Oldest Lisbon district with winding alleys and Fado music."
