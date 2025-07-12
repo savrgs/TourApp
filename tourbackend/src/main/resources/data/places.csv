@@ -1,6 +1,6 @@
-name,type,latitude,longitude,isFree,cityName,description
-Eiffel Tower,monument,48.8584,2.2945,false,Paris,"Iconic wrought-iron tower offering panoramic views of Paris."
-Louvre Museum,museum,48.8606,2.3376,true,Paris,"World-renowned museum housing the Mona Lisa and classical art."
+name,type,latitude,longitude,isFree,cityName,description,photoUrl
+Eiffel Tower,monument,48.8584,2.2945,false,Paris,Iconic wrought-iron tower offering panoramic views of Paris.,https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg
+Louvre Museum,museum,48.8606,2.3376,true,Paris,World-renowned museum housing the Mona Lisa and classical art.,https://images.pexels.com/photos/235605/pexels-photo-235605.jpeg
 Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris,"Famous Gothic cathedral known for its architecture and history."
 Montmartre,neighborhood,48.8867,2.3431,true,Paris,"Historic hilltop area with artistic heritage and the Sacré-Cœur."
 Brandenburg Gate,monument,52.5163,13.3777,true,Berlin,"Neoclassical gate symbolizing German unity."

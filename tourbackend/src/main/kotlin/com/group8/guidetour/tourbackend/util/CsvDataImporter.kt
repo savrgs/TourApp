@@ -61,6 +61,10 @@ class CsvDataImporter(
                             logger.warn("City not found for place: {}", parts.joinToString(","))
                             null
                         } else {
+                            val photoUrl = if (parts.size >= 8 && parts[7].trim().isNotEmpty()) {
+                                parts[7].trim().removeSurrounding("\"")
+                            } else null
+                            
                             Place(
                                 name = parts[0].trim().removeSurrounding("\""),
                                 type = parts[1].trim().removeSurrounding("\""),
@@ -68,6 +72,7 @@ class CsvDataImporter(
                                 longitude = parts[3].toDoubleOrNull() ?: 0.0,
                                 isFree = parts[4].trim().toBooleanStrictOrNull() ?: false,
                                 description = parts[6].trim().removeSurrounding("\""),
+                                photoUrl = photoUrl,
                                 city = city
                             )
                         }
