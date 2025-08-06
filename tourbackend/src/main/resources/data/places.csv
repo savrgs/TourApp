@@ -1,33 +1,33 @@
 name,type,latitude,longitude,isFree,cityName,description,photoUrl
 Eiffel Tower,monument,48.8584,2.2945,false,Paris,Iconic wrought-iron tower offering panoramic views of Paris.,https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg
-Louvre Museum,museum,48.8606,2.3376,true,Paris,World-renowned museum housing the Mona Lisa and classical art.,https://images.pexels.com/photos/235605/pexels-photo-235605.jpeg
-Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris,"Famous Gothic cathedral known for its architecture and history."
-Montmartre,neighborhood,48.8867,2.3431,true,Paris,"Historic hilltop area with artistic heritage and the Sacré-Cœur."
-Brandenburg Gate,monument,52.5163,13.3777,true,Berlin,"Neoclassical gate symbolizing German unity."
-Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin,"Preserved site of the former Berlin Wall with exhibits."
-Museum Island,museum,52.5169,13.4010,false,Berlin,"UNESCO site with multiple museums and art collections."
-Colosseum,monument,41.8902,12.4922,false,Rome,"Ancient Roman amphitheater once hosting gladiator battles."
-Trevi Fountain,fountain,41.9009,12.4833,true,Rome,"Baroque fountain where visitors toss coins for good luck."
-Pantheon,temple,41.8986,12.4768,true,Rome,"Well-preserved Roman temple with a massive dome."
-Vatican Museums,museum,41.9065,12.4536,false,Rome,"Art-filled museums including the Sistine Chapel."
-Royal Palace,monument,40.4179,-3.7143,true,Madrid,"Grand official residence of the Spanish royal family."
-Plaza Mayor,square,40.4155,-3.7074,true,Madrid,"Huge square in the center of Madrid with cafés and shops."
-El Retiro Park,park,40.4153,-3.6844,true,Madrid,"Expansive park with gardens, a lake, and sculptures."
-Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna,"Baroque palace with gardens, zoo, and royal history."
-Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna,"Palace complex with Austrian art collections."
-St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna,"Gothic cathedral and iconic landmark of Vienna."
-Anne Frank House,museum,52.3752,4.8838,false,Amsterdam,"Museum dedicated to Anne Frank and WWII history."
-Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam,"Museum with Dutch art from Rembrandt to Vermeer."
-Vondelpark,park,52.3584,4.8685,true,Amsterdam,"Popular urban park with green space and sculptures."
-Charles Bridge,bridge,50.0865,14.4114,true,Prague,"Historic bridge with baroque statues spanning the Vltava."
-Prague Castle,castle,50.0900,14.4006,false,Prague,"Medieval castle complex and the seat of the Czech president."
-Old Town Square,square,50.0870,14.4208,true,Prague,"Colorful historic square with the Astronomical Clock."
-Buda Castle,palace,47.4966,19.0399,true,Budapest,"Historic castle and palace complex of Hungarian kings."
-Fisherman’s Bastion,lookout,47.5023,19.0347,true,Budapest,"Neo-Romanesque terrace with panoramic city views."
-Heroes’ Square,monument,47.5146,19.0770,true,Budapest,"Major square featuring statues of Hungarian leaders."
-Old Town,area,52.2299,21.0067,true,Warsaw,"Historic district rebuilt after WWII with cobbled streets."
-Royal Castle,castle,52.2470,21.0136,false,Warsaw,"Former royal residence now housing art and history exhibits."
-Lazienki Park,park,52.2149,21.0347,true,Warsaw,"Large park with palaces, lakes, and peacocks."
-Belém Tower,monument,38.6916,-9.2166,true,Lisbon,"Fortified tower symbolizing Portugal’s Age of Discoveries."
-Jerónimos Monastery,monastery,38.6981,-9.2065,false,Lisbon,"Impressive Gothic monastery and UNESCO site."
-Alfama,neighborhood,38.7139,-9.1316,true,Lisbon,"Oldest Lisbon district with winding alleys and Fado music."
+Louvre Museum,museum,48.8606,2.3376,true,Paris,World-renowned museum housing the Mona Lisa and classical art.,https://images.pexels.com/photos/2675266/pexels-photo-2675266.jpeg
+Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris,Famous Gothic cathedral known for its architecture and history.,https://images.pexels.com/photos/4452039/pexels-photo-4452039.jpeg
+Montmartre,neighborhood,48.8867,2.3431,true,Paris,Historic hilltop area with artistic heritage and the SacréCœur.,https://images.pexels.com/photos/33321254/pexels-photo-33321254.jpeg
+Brandenburg Gate,monument,52.5163,13.3777,true,Berlin,Neoclassical gate symbolizing German unity.,https://images.pexels.com/photos/2570063/pexels-photo-2570063.jpeg
+Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin,Preserved site of the former Berlin Wall with exhibits.,https://images.pexels.com/photos/27429640/pexels-photo-27429640.jpeg
+Museum Island,museum,52.5169,13.4010,false,Berlin,UNESCO site with multiple museums and art collections.,https://images.pexels.com/photos/19451108/pexels-photo-19451108.jpeg
+Colosseum,monument,41.8902,12.4922,false,Rome,Ancient Roman amphitheater once hosting gladiator battles.,https://images.pexels.com/photos/2064827/pexels-photo-2064827.jpeg
+Trevi Fountain,fountain,41.9009,12.4833,true,Rome,Baroque fountain where visitors toss coins for good luck.,https://images.pexels.com/photos/2031967/pexels-photo-2031967.jpeg
+Pantheon,temple,41.8986,12.4768,true,Rome,Well-preserved Roman temple with a massive dome.,https://images.pexels.com/photos/2031965/pexels-photo-2031965.jpeg
+Vatican Museums,museum,41.9065,12.4536,false,Rome,Art-filled museums including the Sistine Chapel.,https://images.pexels.com/photos/25852926/pexels-photo-25852926.jpeg
+Royal Palace,monument,40.4179,-3.7143,true,Madrid,Grand official residence of the Spanish royal family.,https://images.pexels.com/photos/28584748/pexels-photo-28584748.jpeg
+Plaza Mayor,square,40.4155,-3.7074,true,Madrid,Huge square in the center of Madrid with cafés and shops.,https://images.pexels.com/photos/16121408/pexels-photo-16121408.jpeg
+El Retiro Park,park,40.4153,-3.6844,true,Madrid,Expansive park with gardens, a lake, and sculptures.,https://images.pexels.com/photos/10342081/pexels-photo-10342081.jpeg
+Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna,Baroque palace with gardens, zoo, and royal history.,https://images.pexels.com/photos/3741463/pexels-photo-3741463.jpeg
+Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna,Palace complex with Austrian art collections.,https://images.pexels.com/photos/32639169/pexels-photo-32639169.jpeg
+St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna,Gothic cathedral and iconic landmark of Vienna.,https://images.pexels.com/photos/6237861/pexels-photo-6237861.jpeg
+Anne Frank House,museum,52.3752,4.8838,false,Amsterdam,Museum dedicated to Anne Frank and WWII history.,https://images.pexels.com/photos/763240/pexels-photo-763240.jpeg
+Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam,Museum with Dutch art from Rembrandt to Vermeer.,https://images.pexels.com/photos/208733/pexels-photo-208733.jpeg
+Vondelpark,park,52.3584,4.8685,true,Amsterdam,Popular urban park with green space and sculptures.,https://images.pexels.com/photos/2031703/pexels-photo-2031703.jpeg
+Charles Bridge,bridge,50.0865,14.4114,true,Prague,Historic bridge with baroque statues spanning the Vltava.,https://images.pexels.com/photos/29986005/pexels-photo-29986005.jpeg
+Prague Castle,castle,50.0900,14.4006,false,Prague,Medieval castle complex and the seat of the Czech president.,https://images.pexels.com/photos/13409706/pexels-photo-13409706.jpeg
+Old Town Square,square,50.0870,14.4208,true,Prague,Colorful historic square with the Astronomical Clock.,https://images.pexels.com/photos/7245230/pexels-photo-7245230.jpeg
+Buda Castle,palace,47.4966,19.0399,true,Budapest,Historic castle and palace complex of Hungarian kings.,https://images.pexels.com/photos/3739322/pexels-photo-3739322.jpeg
+Fisherman’s Bastion,lookout,47.5023,19.0347,true,Budapest,Neo-Romanesque terrace with panoramic city views.,https://images.pexels.com/photos/2127656/pexels-photo-2127656.jpeg
+Heroes’ Square,monument,47.5146,19.0770,true,Budapest,Major square featuring statues of Hungarian leaders.,https://images.pexels.com/photos/161702/heroes-square-budapest-architecture-161702.jpeg
+Old Town,area,52.2299,21.0067,true,Warsaw,Historic district rebuilt after WWII with cobbled streets.,https://images.pexels.com/photos/32468799/pexels-photo-32468799.jpeg
+Royal Castle,castle,52.2470,21.0136,false,Warsaw,Former royal residence now housing art and history exhibits.,https://images.pexels.com/photos/7115505/pexels-photo-7115505.jpeg
+Lazienki Park,park,52.2149,21.0347,true,Warsaw,Large park with palaces, lakes, and peacocks.,https://images.pexels.com/photos/18931648/pexels-photo-18931648.jpeg
+Belém Tower,monument,38.6916,-9.2166,true,Lisbon,Fortified tower symbolizing Portugal’s Age of Discoveries.,https://images.pexels.com/photos/32109908/pexels-photo-32109908.jpeg
+Jerónimos Monastery,monastery,38.6981,-9.2065,false,Lisbon,Impressive Gothic monastery and UNESCO site.,https://images.pexels.com/photos/24777941/pexels-photo-24777941.jpeg
+Alfama,neighborhood,38.7139,-9.1316,true,Lisbon,Oldest Lisbon district with winding alleys and Fado music.,https://images.pexels.com/photos/436850/pexels-photo-436850.jpeg
