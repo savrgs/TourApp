@@ -1,21 +1,54 @@
 name,type,latitude,longitude,isFree,cityName,description,photoUrl
-Eiffel Tower,monument,48.8584,2.2945,false,Paris,Iconic wrought-iron tower offering panoramic views of Paris.,https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg
-Louvre Museum,museum,48.8606,2.3376,true,Paris,World-renowned museum housing the Mona Lisa and classical art.,https://images.pexels.com/photos/2675266/pexels-photo-2675266.jpeg
-Notre-Dame Cathedral,church,48.8530,2.3499,true,Paris,Famous Gothic cathedral known for its architecture and history.,https://images.pexels.com/photos/4452039/pexels-photo-4452039.jpeg
-Montmartre,neighborhood,48.8867,2.3431,true,Paris,Historic hilltop area with artistic heritage and the SacréCœur.,https://images.pexels.com/photos/33321254/pexels-photo-33321254.jpeg
-Brandenburg Gate,monument,52.5163,13.3777,true,Berlin,Neoclassical gate symbolizing German unity.,https://images.pexels.com/photos/2570063/pexels-photo-2570063.jpeg
-Berlin Wall Memorial,historical,52.5351,13.3903,true,Berlin,Preserved site of the former Berlin Wall with exhibits.,https://images.pexels.com/photos/27429640/pexels-photo-27429640.jpeg
-Museum Island,museum,52.5169,13.4010,false,Berlin,UNESCO site with multiple museums and art collections.,https://images.pexels.com/photos/19451108/pexels-photo-19451108.jpeg
-Colosseum,monument,41.8902,12.4922,false,Rome,Ancient Roman amphitheater once hosting gladiator battles.,https://images.pexels.com/photos/2064827/pexels-photo-2064827.jpeg
-Trevi Fountain,fountain,41.9009,12.4833,true,Rome,Baroque fountain where visitors toss coins for good luck.,https://images.pexels.com/photos/2031967/pexels-photo-2031967.jpeg
-Pantheon,temple,41.8986,12.4768,true,Rome,Well-preserved Roman temple with a massive dome.,https://images.pexels.com/photos/2031965/pexels-photo-2031965.jpeg
-Vatican Museums,museum,41.9065,12.4536,false,Rome,Art-filled museums including the Sistine Chapel.,https://images.pexels.com/photos/25852926/pexels-photo-25852926.jpeg
+Eiffel Tower,monument,48.8584,2.2945,False,Paris,Iconic wrought-iron tower offering panoramic views of Paris.,https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg
+Louvre Museum,museum,48.8606,2.3376,True,Paris,World-renowned museum housing the Mona Lisa and classical art.,https://images.pexels.com/photos/2675266/pexels-photo-2675266.jpeg
+Notre-Dame Cathedral,church,48.853,2.3499,True,Paris,Famous Gothic cathedral known for its architecture and history.,https://images.pexels.com/photos/4452039/pexels-photo-4452039.jpeg
+Montmartre,neighborhood,48.8867,2.3431,True,Paris,Historic hilltop area with artistic heritage and the SacréCœur.,https://images.pexels.com/photos/33321254/pexels-photo-33321254.jpeg
+Arc de Triomphe,monument,48.8738,2.295,False,Paris,Famous arch honoring those who fought for France with panoramic views.,https://images.pexels.com/photos/3385153/pexels-photo-3385153.jpeg
+Palace of Versailles,palace,48.8049,2.1204,False,Paris,Luxurious royal palace with vast gardens and ornate halls.,https://images.pexels.com/photos/460740/pexels-photo-460740.jpeg
+Musée d'Orsay,museum,48.86,2.3266,False,Paris,Impressionist art museum in a former railway station.,https://images.pexels.com/photos/2087332/pexels-photo-2087332.jpeg
+Sainte-Chapelle,chapel,48.8554,2.345,False,Paris,Gothic chapel with stunning stained-glass windows.,https://images.pexels.com/photos/3568443/pexels-photo-3568443.jpeg
+Luxembourg Gardens,park,48.8462,2.3371,True,Paris,Beautiful formal gardens with fountains and statues.,https://images.pexels.com/photos/1314991/pexels-photo-1314991.jpeg
+Palais Garnier,opera house,48.8719,2.3316,False,Paris,Opulent 19th-century opera house and architectural icon.,https://images.pexels.com/photos/4159495/pexels-photo-4159495.jpeg
+Brandenburg Gate,monument,52.5163,13.3777,True,Berlin,Neoclassical gate symbolizing German unity.,https://images.pexels.com/photos/2570063/pexels-photo-2570063.jpeg
+Berlin Wall Memorial,historical,52.5351,13.3903,True,Berlin,Preserved site of the former Berlin Wall with exhibits.,https://images.pexels.com/photos/27429640/pexels-photo-27429640.jpeg
+Museum Island,museum,52.5169,13.401,False,Berlin,UNESCO site with multiple museums and art collections.,https://images.pexels.com/photos/19451108/pexels-photo-19451108.jpeg
+Pergamon Museum,museum,52.5212,13.3969,False,Berlin,Renowned museum with monumental architecture and ancient artifacts.,https://images.pexels.com/photos/27429641/pexels-photo-27429641.jpeg
+Reichstag Building,government,52.5186,13.3762,True,Berlin,Historic parliament building with a glass dome and city views.,https://images.pexels.com/photos/2116715/pexels-photo-2116715.jpeg
+Checkpoint Charlie,historical,52.5076,13.3904,True,Berlin,Famous Cold War crossing point between East and West Berlin.,https://images.pexels.com/photos/2603466/pexels-photo-2603466.jpeg
+Berlin Cathedral,church,52.5194,13.401,False,Berlin,Majestic Protestant cathedral with elaborate domes and tombs.,https://images.pexels.com/photos/2462017/pexels-photo-2462017.jpeg
+Gendarmenmarkt,square,52.5138,13.3927,True,Berlin,Elegant square flanked by twin churches and the concert hall.,https://images.pexels.com/photos/2462018/pexels-photo-2462018.jpeg
+East Side Gallery,art,52.505,13.4396,True,Berlin,Outdoor gallery on a stretch of the Berlin Wall covered in murals.,https://images.pexels.com/photos/2795320/pexels-photo-2795320.jpeg
+Charlottenburg Palace,palace,52.52,13.295,False,Berlin,Baroque palace with lavish interiors and gardens.,https://images.pexels.com/photos/11705715/pexels-photo-11705715.jpeg
+Colosseum,monument,41.8902,12.4922,False,Rome,Ancient Roman amphitheater once hosting gladiator battles.,https://images.pexels.com/photos/2064827/pexels-photo-2064827.jpeg
+Trevi Fountain,fountain,41.9009,12.4833,True,Rome,Baroque fountain where visitors toss coins for good luck.,https://images.pexels.com/photos/2031967/pexels-photo-2031967.jpeg
+Pantheon,temple,41.8986,12.4768,True,Rome,Well-preserved Roman temple with a massive dome.,https://images.pexels.com/photos/2031965/pexels-photo-2031965.jpeg
+Roman Forum,ruins,41.8925,12.4853,False,Rome,Ruins of ancient government buildings in the center of Rome.,https://images.pexels.com/photos/16123594/pexels-photo-16123594.jpeg
+St. Peter's Basilica,church,41.9022,12.4539,True,Rome,Largest church in the world located in Vatican City.,https://images.pexels.com/photos/3568444/pexels-photo-3568444.jpeg
+Piazza Navona,square,41.8992,12.4731,True,Rome,Lively square with Baroque architecture and fountains.,https://images.pexels.com/photos/16442440/pexels-photo-16442440.jpeg
+Spanish Steps,stairs,41.9059,12.4823,True,Rome,Famous 18th-century staircase linking Piazza di Spagna and Trinità dei Monti.,https://images.pexels.com/photos/1447020/pexels-photo-1447020.jpeg
+Castel Sant'Angelo,castle,41.9031,12.4663,False,Rome,Historic fortress with museum exhibits and city views.,https://images.pexels.com/photos/2687420/pexels-photo-2687420.jpeg
+Villa Borghese,park,41.9142,12.4922,True,Rome,Large landscaped garden with museums and sculptures.,https://images.pexels.com/photos/5049370/pexels-photo-5049370.jpeg
+Capitoline Museums,museum,41.8923,12.4828,False,Rome,One of the oldest public museums with Roman art and artifacts.,https://images.pexels.com/photos/3757145/pexels-photo-3757145.jpeg
 Royal Palace,monument,40.4179,-3.7143,true,Madrid,Grand official residence of the Spanish royal family.,https://images.pexels.com/photos/28584748/pexels-photo-28584748.jpeg
 Plaza Mayor,square,40.4155,-3.7074,true,Madrid,Huge square in the center of Madrid with cafés and shops.,https://images.pexels.com/photos/16121408/pexels-photo-16121408.jpeg
 El Retiro Park,park,40.4153,-3.6844,true,Madrid,Expansive park with gardens, a lake, and sculptures.,https://images.pexels.com/photos/10342081/pexels-photo-10342081.jpeg
+Puerta del Sol,square,40.4169,-3.7035,True,Madrid,Central square of Madrid and popular meeting spot.,https://images.pexels.com/photos/32489777/pexels-photo-32489777.jpeg
+Gran Vía,street,40.4203,-3.7058,True,Madrid,Lively shopping and entertainment street in Madrid.,https://images.pexels.com/photos/4330190/pexels-photo-4330190.jpeg
+Templo de Debod,temple,40.424,-3.7179,True,Madrid,Ancient Egyptian temple reconstructed in Madrid.,https://images.pexels.com/photos/18506019/pexels-photo-18506019.jpeg
+Museo Nacional del Prado,museum,40.4138,-3.6921,False,Madrid,Spain's main national art museum with classical works.,https://images.pexels.com/photos/12762034/pexels-photo-12762034.jpeg
+Santiago Bernabéu Stadium,stadium,40.4531,-3.6883,False,Madrid,Home stadium of Real Madrid FC and museum.,https://images.pexels.com/photos/14231279/pexels-photo-14231279.jpeg
+Cibeles Palace,building,40.4195,-3.6934,True,Madrid,Iconic white building with cultural center and viewpoint.,https://images.pexels.com/photos/12754738/pexels-photo-12754738.jpeg
+Thyssen-Bornemisza Museum,museum,40.4163,-3.6941,False,Madrid,Art museum with works spanning centuries and styles.,https://images.pexels.com/photos/4703824/pexels-photo-4703824.jpeg
 Schönbrunn Palace,palace,48.1845,16.3122,true,Vienna,Baroque palace with gardens, zoo, and royal history.,https://images.pexels.com/photos/3741463/pexels-photo-3741463.jpeg
 Belvedere Palace,art gallery,48.1914,16.3806,false,Vienna,Palace complex with Austrian art collections.,https://images.pexels.com/photos/32639169/pexels-photo-32639169.jpeg
 St. Stephen's Cathedral,church,48.2082,16.3738,true,Vienna,Gothic cathedral and iconic landmark of Vienna.,https://images.pexels.com/photos/6237861/pexels-photo-6237861.jpeg
+Hofburg Palace,palace,48.2065,16.3634,False,Vienna,Former imperial palace with museums and the Spanish Riding School.,https://images.pexels.com/photos/2959331/pexels-photo-2959331.jpeg
+Vienna State Opera,opera house,48.2028,16.3689,False,Vienna,Renowned opera house with guided tours and performances.,https://images.pexels.com/photos/3824693/pexels-photo-3824693.jpeg
+Naschmarkt,market,48.1982,16.3611,True,Vienna,Famous food and flea market with international cuisine.,https://images.pexels.com/photos/12109981/pexels-photo-12109981.jpeg
+Kunsthistorisches Museum,museum,48.2031,16.3615,False,Vienna,Art museum with imperial collections and old masters.,https://images.pexels.com/photos/2065826/pexels-photo-2065826.jpeg
+Albertina Museum,museum,48.2049,16.3696,False,Vienna,Museum with modern and classical art exhibitions.,https://images.pexels.com/photos/19335749/pexels-photo-19335749.jpeg
+Prater Park,park,48.2167,16.4002,True,Vienna,Large public park with amusement rides and giant Ferris wheel.,https://images.pexels.com/photos/2832599/pexels-photo-2832599.jpeg
+Hundertwasser House,landmark,48.2071,16.3923,True,Vienna,Colorful apartment building designed by Friedensreich Hundertwasser.,https://images.pexels.com/photos/3646713/pexels-photo-3646713.jpeg
 Anne Frank House,museum,52.3752,4.8838,false,Amsterdam,Museum dedicated to Anne Frank and WWII history.,https://images.pexels.com/photos/763240/pexels-photo-763240.jpeg
 Rijksmuseum,museum,52.3600,4.8852,false,Amsterdam,Museum with Dutch art from Rembrandt to Vermeer.,https://images.pexels.com/photos/208733/pexels-photo-208733.jpeg
 Vondelpark,park,52.3584,4.8685,true,Amsterdam,Popular urban park with green space and sculptures.,https://images.pexels.com/photos/2031703/pexels-photo-2031703.jpeg
