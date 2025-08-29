@@ -18,6 +18,9 @@ class PlaceViewModel(
     private val _places = MutableStateFlow<List<PlaceDto>?>(null)
     val places: StateFlow<List<PlaceDto>?> = _places
 
+    private val _selectedPlaces = MutableStateFlow<List<PlaceDto>>(emptyList())
+    val selectedPlaces: StateFlow<List<PlaceDto>> = _selectedPlaces
+
     private val _loading = MutableStateFlow(true)
     val loading: StateFlow<Boolean> = _loading
 
@@ -30,21 +33,46 @@ class PlaceViewModel(
     private var routeJob: Job? = null
     private val routeMutex = Mutex()
 
+    fun selectPlace(place: PlaceDto) {
+        if (!_selectedPlaces.value.contains(place)) {
+            _selectedPlaces.value = _selectedPlaces.value + place
+        }
+    }
+
+    fun unselectPlace(place: PlaceDto) {
+        if (_selectedPlaces.value.contains(place)) {
+            _selectedPlaces.value = _selectedPlaces.value - place
+        }
+    }
+
+    fun togglePlaceSelection(place: PlaceDto, isSelected: Boolean) {
+        if (isSelected) selectPlace(place) else unselectPlace(place)
+    }
+
     fun fetchPlacesForCity(cityId: Long) {
         viewModelScope.launch {
             _loading.value = true
             try {
-                _places.value = repository.getPlacesByCityId(cityId)
+                val fetchedPlaces = repository.getPlacesByCityId(cityId)
+                _places.value = fetchedPlaces
+                _selectedPlaces.value = emptyList() // Reset selection on city change
             } catch (e: Exception) {
                 _places.value = emptyList()
+                _selectedPlaces.value = emptyList()
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    fun fetchRoute(origin: LatLng, destinations: List<LatLng>) {
-        if (directionsRepository == null) return
+    fun planRoute(userLocation: LatLng?) {
+        if (directionsRepository == null || userLocation == null) return
+        val selected = _selectedPlaces.value
+        if (selected.size < 2) {
+            _routeError.value = "Please select at least two places to plan a route"
+            _routePolyline.value = null
+            return
+        }
         routeJob?.cancel()
         routeJob = viewModelScope.launch {
             routeMutex.withLock {
@@ -52,19 +80,14 @@ class PlaceViewModel(
                 _routeError.value = null
                 try {
                     delay(500) // debounce
-                    if (destinations.size < 2) {
-                        _routePolyline.value = null
-                        _routeLoading.value = false
-                        return@launch
+                    val sortedPlaces = selected.sortedBy { place ->
+                        val placeLocation = LatLng(place.latitude, place.longitude)
+                        val userLoc = userLocation
+                        Math.abs(userLoc.latitude - placeLocation.latitude) + Math.abs(userLoc.longitude - placeLocation.longitude)
                     }
-                    val originStr = "${origin.latitude},${origin.longitude}"
-                    val destinationStr = "${destinations.last().latitude},${destinations.last().longitude}"
-                    val waypointList = destinations.dropLast(1)
-                    val waypoints = if (waypointList.size > 1) {
-                        "optimize:true|" + waypointList.joinToString("|") { "${it.latitude},${it.longitude}" }
-                    } else {
-                        waypointList.joinToString("|") { "${it.latitude},${it.longitude}" }
-                    }
+                    val originStr = "${userLocation.latitude},${userLocation.longitude}"
+                    val destinationStr = "${sortedPlaces.last().latitude},${sortedPlaces.last().longitude}"
+                    val waypoints = sortedPlaces.dropLast(1).joinToString("|") { "${it.latitude},${it.longitude}" }
                     val polyline = directionsRepository.getRoutePolyline(originStr, destinationStr, if (waypoints.isEmpty()) null else waypoints)
                     _routePolyline.value = polyline
                 } catch (e: Exception) {
