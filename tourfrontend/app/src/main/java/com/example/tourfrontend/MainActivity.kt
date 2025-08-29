@@ -336,7 +336,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     MapViewComponent(
-                        places = places ?: emptyList(),
+                        places = selectedPlaces,
                         showUserLocation = locationPermissionGranted
                     )
                     Spacer(modifier = Modifier.height(8.dp))
