@@ -111,6 +111,21 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
     val cities by viewModel.cities.collectAsState()
     val loading by viewModel.loading.collectAsState()
 
+    // Weather API setup
+    val weatherApi = remember {
+        Retrofit.Builder()
+            .baseUrl("https://api.weatherapi.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WeatherApiService::class.java)
+    }
+    val weatherViewModel: WeatherViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return WeatherViewModel(weatherApi, "bdfdb5adccc243d192a15465425300") as T
+        }
+    })
+
     LaunchedEffect(Unit) {
         viewModel.fetchCities()
     }
@@ -170,12 +185,15 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(cities ?: emptyList()) { city ->
-                        CityCard(
-                            city = city,
-                            onClick = {
-                                navController.navigate("places/${city.id}")
-                            }
-                        )
+                        Column {
+                            CityCard(
+                                city = city,
+                                onClick = {
+                                    navController.navigate("places/${city.id}")
+                                }
+                            )
+                            CityWeatherCard(weatherViewModel = weatherViewModel, cityName = city.name)
+                        }
                     }
                 }
             }
@@ -499,6 +517,20 @@ fun PlaceCard(
     onSelectionChanged: (Boolean) -> Unit,
     onNavigate: (Double, Double) -> Unit
 ) {
+    // Weather API setup
+    val weatherApi = remember {
+        Retrofit.Builder()
+            .baseUrl("https://api.weatherapi.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WeatherApiService::class.java)
+    }
+    val weatherViewModel: WeatherViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return WeatherViewModel(weatherApi, "bdfdb5adccc243d192a15465425300") as T
+        }
+    })
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     
@@ -528,106 +560,108 @@ fun PlaceCard(
                             model = place.photoUrl,
                             contentDescription = "Photo of ${place.name}",
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(16f / 9f),
-                            contentScale = ContentScale.Crop,
-                            /*error = {
-                                // Fallback image when photo fails to load
-                                Box(
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .aspectRatio(16f / 9f)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                                    contentAlignment = Alignment.Center
+                                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
                                 ) {
-                                    Text(
-                                        text = "📷",
-                                        fontSize = 48.sp
-                                    )
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(20.dp)
+                                    ) {
+                                        // Place information with icon and selection checkbox
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Place type icon
+                                            Text(
+                                                text = getPlaceTypeIcon(place.type),
+                                                fontSize = 24.sp,
+                                                modifier = Modifier.padding(end = 12.dp)
+                                            )
+                                            // Place details
+                                            Column(
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(
+                                                    text = place.name,
+                                                    fontSize = 22.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    lineHeight = 28.sp
+                                                )
+                                                Spacer(modifier = Modifier.height(6.dp))
+                                                Text(
+                                                    text = "${place.type} • ${if (place.isFree) "Free" else "Paid"}",
+                                                    fontSize = 16.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    lineHeight = 20.sp
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    text = place.description,
+                                                    fontSize = 14.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    lineHeight = 18.sp,
+                                                    maxLines = 5
+                                                )
+                                            }
+                                            // Info icon
+                                            IconButton(
+                                                onClick = { showDialog = true },
+                                                modifier = Modifier.size(40.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Info,
+                                                    contentDescription = "More info about ${place.name}",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            // Selection checkbox
+                                            Checkbox(
+                                                checked = isSelected,
+                                                onCheckedChange = onSelectionChanged,
+                                                colors = CheckboxDefaults.colors(
+                                                    checkedColor = MaterialTheme.colorScheme.primary,
+                                                    uncheckedColor = MaterialTheme.colorScheme.outline
+                                                )
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        // Weather info for this place
+                                        PlaceWeatherCard(weatherViewModel = weatherViewModel, placeId = place.id, lat = place.latitude, lon = place.longitude)
+                                        // Navigate button
+                                        Button(
+                                            onClick = { onNavigate(place.latitude, place.longitude) },
+                                            modifier = Modifier.align(Alignment.End),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3)
+                                            ),
+                                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                                            shape = MaterialTheme.shapes.small
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Navigation,
+                                                contentDescription = "Navigate to ${place.name}",
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Navigate",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    }
                                 }
-                            }*/
-                        )
-                    } else {
-                        // Default image when no photo is available
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(16f / 9f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "📷",
-                                fontSize = 48.sp
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Close")
-                }
-            }
-        )
-    }
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            // Place information with icon and selection checkbox
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Place type icon
-                Text(
-                    text = getPlaceTypeIcon(place.type),
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(end = 12.dp)
-                )
-                
-                // Place details
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = place.name,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 28.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "${place.type} • ${if (place.isFree) "Free" else "Paid"}",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = place.description,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 18.sp,
-                        maxLines = 5
-                    )
-                }
-                
-                // Info icon
-                IconButton(
                     onClick = { showDialog = true },
                     modifier = Modifier.size(40.dp)
                 ) {
@@ -705,10 +739,13 @@ fun getPlaceTypeIcon(placeType: String): String {
 }
 
 @Composable
+@Composable
 fun MapViewComponent(
     places: List<PlaceDto>,
     showUserLocation: Boolean
 ) {
+    var trafficEnabled by remember { mutableStateOf(false) }
+    var transitEnabled by remember { mutableStateOf(false) }
     val singapore = LatLng(1.3521, 103.8198) // fallback location
     val firstPlaceLatLng = places.firstOrNull()?.let { LatLng(it.latitude, it.longitude) }
     val cameraPositionState = rememberCameraPositionState {
@@ -731,23 +768,39 @@ fun MapViewComponent(
         }
     }
 
-    GoogleMap(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp),
-        cameraPositionState = cameraPositionState,
-        properties = MapProperties(isMyLocationEnabled = showUserLocation),
-        uiSettings = MapUiSettings(zoomControlsEnabled = true),
-        onMapLoaded = {
-            Log.d("MapViewComponent", "GoogleMap loaded successfully")
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Traffic", modifier = Modifier.padding(end = 8.dp))
+            Switch(checked = trafficEnabled, onCheckedChange = { trafficEnabled = it })
+            Spacer(modifier = Modifier.width(16.dp))
+            Text("Transit", modifier = Modifier.padding(end = 8.dp))
+            Switch(checked = transitEnabled, onCheckedChange = { transitEnabled = it })
         }
-    ) {
-        for (place in places) {
-            Marker(
-                state = MarkerState(position = LatLng(place.latitude, place.longitude)),
-                title = place.name,
-                snippet = place.type
-            )
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties(
+                isMyLocationEnabled = showUserLocation,
+                isTrafficEnabled = trafficEnabled,
+                isTransitEnabled = transitEnabled
+            ),
+            uiSettings = MapUiSettings(zoomControlsEnabled = true),
+            onMapLoaded = {
+                Log.d("MapViewComponent", "GoogleMap loaded successfully")
+            }
+        ) {
+            for (place in places) {
+                Marker(
+                    state = MarkerState(position = LatLng(place.latitude, place.longitude)),
+                    title = place.name,
+                    snippet = place.type
+                )
+            }
         }
     }
 }
