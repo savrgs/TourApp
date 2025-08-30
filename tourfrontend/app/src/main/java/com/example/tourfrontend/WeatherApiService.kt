@@ -30,6 +30,12 @@ data class WeatherResponse(
 }
 
 interface WeatherApiService {
+    @GET("/v1/forecast.json")
+    suspend fun getForecast(
+        @Query("key") apiKey: String,
+        @Query("q") query: String,
+        @Query("days") days: Int = 5
+    ): Response<ForecastResponse>
     @GET("/v1/current.json")
     suspend fun getCurrentWeather(
         @Query("key") apiKey: String,

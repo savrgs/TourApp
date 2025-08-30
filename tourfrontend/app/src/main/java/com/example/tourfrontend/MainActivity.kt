@@ -168,6 +168,36 @@ fun CityExplorerApp() {
             val cityId = backStackEntry.arguments?.getLong("cityId") ?: 0L
             PlacesScreen(cityId, navController)
         }
+        composable(
+            "weatherDetail/{cityName}",
+            arguments = listOf(navArgument("cityName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
+            val weatherApi = Retrofit.Builder()
+                .baseUrl("https://api.weatherapi.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(WeatherApiService::class.java)
+            val forecastViewModel: WeatherForecastViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    @Suppress("UNCHECKED_CAST")
+                    return WeatherForecastViewModel(weatherApi, "bdfdb5adccc243d192a154654253008") as T
+                }
+            })
+            val forecast by forecastViewModel.forecastDays.collectAsState()
+            val loading by forecastViewModel.loading.collectAsState()
+            val error by forecastViewModel.error.collectAsState()
+            LaunchedEffect(cityName) {
+                forecastViewModel.fetchForecast(cityName, days = 7)
+            }
+            ForecastScreen(
+                cityName = cityName,
+                forecast = forecast,
+                loading = loading,
+                error = error,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -277,7 +307,11 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
                                     }
                                 }
                             )
-                            CityWeatherCard(weatherViewModel = cityWeatherViewModel, cityName = city.name)
+                            CityWeatherCard(
+                                weatherViewModel = cityWeatherViewModel,
+                                cityName = city.name,
+                                navController = navController
+                            )
                         }
                     }
                 }

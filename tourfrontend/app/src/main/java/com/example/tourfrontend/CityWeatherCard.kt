@@ -13,8 +13,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import coil.compose.AsyncImage
 
+import androidx.navigation.NavController
+import androidx.compose.foundation.clickable
 @Composable
-fun CityWeatherCard(weatherViewModel: WeatherViewModel, cityName: String) {
+fun CityWeatherCard(
+    weatherViewModel: WeatherViewModel,
+    cityName: String,
+    navController: NavController
+) {
     val weather by weatherViewModel.cityWeather.collectAsState()
     val loading by weatherViewModel.loading.collectAsState()
 
@@ -28,12 +34,21 @@ fun CityWeatherCard(weatherViewModel: WeatherViewModel, cityName: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clickable {
+                navController.navigate("weatherDetail/${cityName}")
+            }
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Weather in $cityName", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "Weather in $cityName",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.clickable {
+                    // TODO: Replace with correct navigation logic
+                }
+            )
             if (loading) {
                 CircularProgressIndicator()
             } else if (weather != null) {
