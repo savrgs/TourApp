@@ -20,6 +20,7 @@ fun CityWeatherCard(weatherViewModel: WeatherViewModel, cityName: String) {
 
     // Fetch weather when composable is shown
     androidx.compose.runtime.LaunchedEffect(cityName) {
+        // Use English city name as expected by WeatherAPI.com
         weatherViewModel.fetchCityWeather(cityName)
     }
 
@@ -44,7 +45,12 @@ fun CityWeatherCard(weatherViewModel: WeatherViewModel, cityName: String) {
                     modifier = Modifier.size(48.dp)
                 )
             } else {
-                Text(text = "No weather data available.")
+                val error = weatherViewModel.lastError
+                if (error != null) {
+                    Text(text = error)
+                } else {
+                    Text(text = "No weather data available. Make sure the city name is valid and in English as expected by WeatherAPI.com.")
+                }
             }
         }
     }

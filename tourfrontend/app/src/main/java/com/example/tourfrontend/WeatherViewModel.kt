@@ -17,6 +17,8 @@ class WeatherViewModel(private val api: WeatherApiService, private val apiKey: S
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    var lastError: String? = null
+
     fun fetchCityWeather(cityName: String) {
         viewModelScope.launch {
             _loading.value = true
@@ -24,7 +26,14 @@ class WeatherViewModel(private val api: WeatherApiService, private val apiKey: S
                 val response: Response<WeatherResponse> = api.getCurrentWeather(apiKey, cityName)
                 if (response.isSuccessful) {
                     _cityWeather.value = response.body()
+                    lastError = null
+                } else {
+                    _cityWeather.value = null
+                    lastError = "Error: ${response.code()} ${response.message()}"
                 }
+            } catch (e: Exception) {
+                _cityWeather.value = null
+                lastError = "Exception: ${e.message}"
             } finally {
                 _loading.value = false
             }
