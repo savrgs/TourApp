@@ -36,6 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -346,6 +352,7 @@ fun CityCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController) {
+
     val retrofit = remember {
         Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8080/")
@@ -365,6 +372,14 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
     val loading by viewModel.loading.collectAsState()
     var selectedPlaces by remember { mutableStateOf<List<PlaceDto>>(emptyList()) }
     LaunchedEffect(places) { selectedPlaces = places ?: emptyList() }
+
+    // Place type filtering (must be after places is declared)
+    var selectedTypes by remember { mutableStateOf<Set<String>>(setOf()) }
+    val allTypes: List<String> = places?.map { it.type }?.distinct()?.sorted() ?: emptyList()
+    if (selectedTypes.isEmpty() && allTypes.isNotEmpty()) {
+        selectedTypes = allTypes.toSet()
+    }
+    val filteredPlaces: List<PlaceDto> = places?.filter { selectedTypes.contains(it.type) } ?: emptyList()
 
     // Location services
     val context = LocalContext.current
@@ -419,8 +434,32 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            // Place type filter bar
+            if (allTypes.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    allTypes.forEach { type ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 12.dp)
+                        ) {
+                            Checkbox(
+                                checked = selectedTypes.contains(type),
+                                onCheckedChange = { checked ->
+                                    selectedTypes = if (checked) selectedTypes + type else selectedTypes - type
+                                }
+                            )
+                            Text(type, fontSize = 14.sp)
+                        }
+                    }
+                }
+            }
             // Map at top, fixed height
-            val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces)
+            val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces.filter { selectedTypes.contains(it.type) })
             MapViewComponent(
                 places = optimizedPlaces,
                 showUserLocation = locationPermissionGranted,
@@ -430,7 +469,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
             )
             Spacer(modifier = Modifier.height(8.dp))
             // Selection Summary
-            if (places?.isNotEmpty() == true) {
+            if (filteredPlaces.isNotEmpty()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -454,7 +493,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "${selectedPlaces.size} of ${places!!.size} places selected for route",
+                            text = "${selectedPlaces.filter { selectedTypes.contains(it.type) }.size} of ${filteredPlaces.size} places selected for route",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -464,7 +503,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 Spacer(modifier = Modifier.height(8.dp))
             }
             // Plan Tour Route Button
-            if (places?.isNotEmpty() == true) {
+            if (filteredPlaces.isNotEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -472,8 +511,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     Button(
                         onClick = {
                             if (userLocation != null) {
-                                if (selectedPlaces.size >= 2) {
-                                    val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces)
+                                val filteredSelected = selectedPlaces.filter { selectedTypes.contains(it.type) }
+                                if (filteredSelected.size >= 2) {
+                                    val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, filteredSelected)
                                     val origin = "${userLocation!!.latitude},${userLocation!!.longitude}"
                                     val destination = "${optimizedPlaces.last().latitude},${optimizedPlaces.last().longitude}"
                                     val waypoints = optimizedPlaces.dropLast(1).joinToString("|") { place ->
@@ -522,9 +562,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            // Scrollable list of places
+            // Scrollable list of filtered places
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(places ?: emptyList()) { place ->
+                items(filteredPlaces) { place ->
                     PlaceCard(
                         place = place,
                         userLocation = userLocation,
