@@ -1,4 +1,3 @@
-
 package com.example.tourfrontend
 import com.example.tourfrontend.optimizeRoute
 import android.Manifest
@@ -85,7 +84,8 @@ fun MapViewComponent(
     showUserLocation: Boolean,
     cityLat: Double,
     cityLon: Double,
-    userLocation: android.location.Location? = null
+    userLocation: android.location.Location? = null,
+    trafficEnabled: Boolean = false
 ) {
     val initialCenter = if (showUserLocation && userLocation != null) {
         LatLng(userLocation.latitude, userLocation.longitude)
@@ -111,7 +111,10 @@ fun MapViewComponent(
             .fillMaxWidth()
             .height(220.dp),
         cameraPositionState = cameraPositionState,
-        properties = MapProperties(isMyLocationEnabled = showUserLocation),
+        properties = MapProperties(
+            isMyLocationEnabled = showUserLocation,
+            isTrafficEnabled = trafficEnabled
+        ),
         uiSettings = MapUiSettings(zoomControlsEnabled = true)
     ) {
         places.forEach { place ->
@@ -239,34 +242,7 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Public,
-                            contentDescription = "City Explorer",
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "City Explorer",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            textAlign = TextAlign.Start,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                title = { Text("Cities") },
             )
         }
     ) { paddingValues ->
@@ -387,6 +363,9 @@ fun CityCard(
 @Composable
 fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController) {
 
+    val selectedTypesState = remember { mutableStateOf<Set<String>>(setOf()) }
+    var selectedTypes: Set<String> by selectedTypesState
+
     val retrofit = remember {
         Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8080/")
@@ -404,16 +383,13 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
 
     val places by viewModel.places.collectAsState()
     val loading by viewModel.loading.collectAsState()
-    var selectedPlaces by remember { mutableStateOf<List<PlaceDto>>(emptyList()) }
-    LaunchedEffect(places) { selectedPlaces = places ?: emptyList() }
+    var selectedPlaces by remember { mutableStateOf<Set<Long>>(setOf()) } // Use place.id for selection
 
-    // Place type filtering (must be after places is declared)
-    var selectedTypes by remember { mutableStateOf<Set<String>>(setOf()) }
     val allTypes: List<String> = places?.map { it.type }?.distinct()?.sorted() ?: emptyList()
-    if (selectedTypes.isEmpty() && allTypes.isNotEmpty()) {
-        selectedTypes = allTypes.toSet()
-    }
-    val filteredPlaces: List<PlaceDto> = places?.filter { selectedTypes.contains(it.type) } ?: emptyList()
+
+    val filteredPlaces: List<PlaceDto> =
+        if (selectedTypes.isEmpty()) places ?: emptyList()
+        else places?.filter { selectedTypes.contains(it.type) } ?: emptyList()
 
     // Location services
     val context = LocalContext.current
@@ -468,6 +444,18 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            // Traffic toggle above filter checkboxes
+            var trafficEnabled by remember { mutableStateOf(false) }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Traffic", modifier = Modifier.weight(1f))
+                Switch(
+                    checked = trafficEnabled,
+                    onCheckedChange = { trafficEnabled = it }
+                )
+            }
             // Place type filter bar
             if (allTypes.isNotEmpty()) {
                 Row(
@@ -493,13 +481,15 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 }
             }
             // Map at top, fixed height
-            val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces.filter { selectedTypes.contains(it.type) })
+            val selectedPlaceObjects = places?.filter { selectedPlaces.contains(it.id) } ?: emptyList()
+            val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaceObjects)
             MapViewComponent(
                 places = optimizedPlaces,
                 showUserLocation = locationPermissionGranted,
                 cityLat = cityLat,
                 cityLon = cityLon,
-                userLocation = userLocation
+                userLocation = userLocation,
+                trafficEnabled = trafficEnabled
             )
             Spacer(modifier = Modifier.height(8.dp))
             // Selection Summary
@@ -526,8 +516,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
+                        val selectedCount = filteredPlaces.count { selectedPlaces.contains(it.id) }
                         Text(
-                            text = "${selectedPlaces.filter { selectedTypes.contains(it.type) }.size} of ${filteredPlaces.size} places selected for route",
+                            text = "$selectedCount of ${filteredPlaces.size} places selected for route",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -545,9 +536,8 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     Button(
                         onClick = {
                             if (userLocation != null) {
-                                val filteredSelected = selectedPlaces.filter { selectedTypes.contains(it.type) }
-                                if (filteredSelected.size >= 2) {
-                                    val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, filteredSelected)
+                                if (selectedPlaceObjects.size >= 2) {
+                                    val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaceObjects)
                                     val origin = "${userLocation!!.latitude},${userLocation!!.longitude}"
                                     val destination = "${optimizedPlaces.last().latitude},${optimizedPlaces.last().longitude}"
                                     val waypoints = optimizedPlaces.dropLast(1).joinToString("|") { place ->
@@ -602,13 +592,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     PlaceCard(
                         place = place,
                         userLocation = userLocation,
-                        isSelected = selectedPlaces.contains(place),
+                        isSelected = selectedPlaces.contains(place.id),
                         onSelectionChanged = { isSelected ->
-                            selectedPlaces = if (isSelected) {
-                                selectedPlaces + place
-                            } else {
-                                selectedPlaces - place
-                            }
+                            selectedPlaces = if (isSelected) selectedPlaces + place.id else selectedPlaces - place.id
                         },
                         onNavigate = { destinationLat, destinationLon ->
                             if (userLocation != null) {
