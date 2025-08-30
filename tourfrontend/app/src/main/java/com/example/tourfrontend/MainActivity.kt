@@ -1,7 +1,6 @@
 
-
 package com.example.tourfrontend
-
+import com.example.tourfrontend.optimizeRoute
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -58,6 +57,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
 import com.google.android.gms.maps.MapsInitializer
 import androidx.compose.material.icons.filled.CheckCircle
+
 
 // Utility function for place type icon
 fun getPlaceTypeIcon(type: String): String {
@@ -414,8 +414,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             // Map at top, fixed height
+            val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces)
             MapViewComponent(
-                places = selectedPlaces,
+                places = optimizedPlaces,
                 showUserLocation = locationPermissionGranted,
                 cityLat = cityLat,
                 cityLon = cityLon,
@@ -466,17 +467,11 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                         onClick = {
                             if (userLocation != null) {
                                 if (selectedPlaces.size >= 2) {
-                                    val sortedPlaces = selectedPlaces.sortedBy { place ->
-                                        val placeLocation = android.location.Location("").apply {
-                                            latitude = place.latitude
-                                            longitude = place.longitude
-                                        }
-                                        userLocation!!.distanceTo(placeLocation)
-                                    }
+                                    val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaces)
                                     val origin = "${userLocation!!.latitude},${userLocation!!.longitude}"
-                                    val destination = "${sortedPlaces.last().latitude},${sortedPlaces.last().longitude}"
-                                    val waypoints = sortedPlaces.dropLast(1).joinToString("|") {
-                                        "${it.latitude},${it.longitude}"
+                                    val destination = "${optimizedPlaces.last().latitude},${optimizedPlaces.last().longitude}"
+                                    val waypoints = optimizedPlaces.dropLast(1).joinToString("|") { place ->
+                                        "${place.latitude},${place.longitude}"
                                     }
                                     val uri = Uri.parse(
                                         "https://www.google.com/maps/dir/?api=1" +
