@@ -115,14 +115,20 @@ fun MapViewComponent(
                 snippet = place.type
             )
         }
-        // Draw polyline connecting all selected places
-        if (places.size >= 2) {
-            val polylinePoints = places.map { LatLng(it.latitude, it.longitude) }
-            Polyline(
-                points = polylinePoints,
-                color = androidx.compose.ui.graphics.Color(0xFF2196F3),
-                width = 6f
-            )
+        // Draw polyline from user location to all selected places
+        if (places.isNotEmpty()) {
+            val polylinePoints = mutableListOf<LatLng>()
+            if (showUserLocation && userLocation != null) {
+                polylinePoints.add(LatLng(userLocation.latitude, userLocation.longitude))
+            }
+            polylinePoints.addAll(places.map { LatLng(it.latitude, it.longitude) })
+            if (polylinePoints.size >= 2) {
+                Polyline(
+                    points = polylinePoints,
+                    color = androidx.compose.ui.graphics.Color(0xFF2196F3),
+                    width = 6f
+                )
+            }
         }
     }
 }
