@@ -37,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -68,6 +71,7 @@ import retrofit2.http.Headers
 import retrofit2.Response
 import androidx.compose.ui.text.style.TextDecoration
 import com.example.tourfrontend.RatingViewModel
+import androidx.compose.ui.graphics.Color
 
 
 // Utility function for place type icon
@@ -454,7 +458,32 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cities") },
+                title = { 
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Public,
+                                contentDescription = "City Explorer",
+                                modifier = Modifier.size(32.dp),
+                                tint = Color.White // White icon on blue background
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "City Explorer",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3), // Blue background
+                    titleContentColor = Color.White // White text on blue background
+                )
             )
         }
     ) { paddingValues ->
@@ -468,9 +497,23 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(48.dp),
+                            strokeWidth = 4.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "Discovering cities...",
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             } else {
                 val cityList = cities ?: emptyList()
@@ -479,14 +522,81 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No cities available.", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationCity,
+                                contentDescription = "No cities",
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "No cities available yet",
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Check back later for new destinations",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Instructional header
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = androidx.compose.ui.graphics.Color(0xFFE3F2FD) // Light blue background
+                                ),
+                                shape = MaterialTheme.shapes.medium,
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    color = androidx.compose.ui.graphics.Color(0xFF2196F3).copy(alpha = 0.2f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.LocationCity,
+                                        contentDescription = "Select City",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = androidx.compose.ui.graphics.Color(0xFF1976D2)
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Select Your Destination",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = androidx.compose.ui.graphics.Color(0xFF1976D2)
+                                        )
+                                        Text(
+                                            text = "Tap on a city to explore its attractions and plan your visit",
+                                            fontSize = 14.sp,
+                                            color = androidx.compose.ui.graphics.Color(0xFF1976D2).copy(alpha = 0.8f),
+                                            lineHeight = 20.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
                         items(cityList) { city ->
                             Column {
                                 CityCard(
@@ -528,55 +638,92 @@ fun CityCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // City Icon
-            Icon(
-                imageVector = Icons.Default.LocationCity,
-                contentDescription = "City",
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            // Enhanced City Icon with background
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        color = androidx.compose.ui.graphics.Color(0xFF2196F3), // Blue background
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationCity,
+                    contentDescription = "City",
+                    modifier = Modifier.size(28.dp),
+                    tint = Color.White // White icon on blue background
+                )
+            }
             
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(20.dp))
             
-            // City Information
+            // Enhanced City Information
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = city.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 28.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = city.country,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Public,
+                        contentDescription = "Country",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = city.country,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
             
-            // Navigation Arrow
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Navigate",
+            // Enhanced Navigation Arrow with background
+            Box(
                 modifier = Modifier
-                    .size(20.dp)
-                    .rotate(180f),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                    .size(40.dp)
+                    .background(
+                        color = androidx.compose.ui.graphics.Color(0xFF64B5F6), // Lighter blue background
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Explore",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(180f),
+                    tint = Color.White // White arrow on blue background
+                )
+            }
         }
     }
 }
@@ -791,7 +938,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3)
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF1976D2) // Darker blue for button
                         ),
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                         shape = MaterialTheme.shapes.medium
@@ -824,6 +971,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                     items(filteredPlaces) { place ->
                         PlaceCard(
                             place = place,
+                            cityId = cityId,
                             userLocation = userLocation,
                             isSelected = selectedPlaces.contains(place.id),
                             onSelectionChanged = { isSelected ->
@@ -848,6 +996,9 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                                 } else {
                                     Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
                                 }
+                            },
+                            onRatingSubmitted = {
+                                viewModel.fetchPlacesForCity(cityId)
                             }
                         )
                     }
@@ -861,19 +1012,24 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
 @Composable
 fun PlaceCard(
     place: PlaceDto,
+    cityId: Long,
     userLocation: android.location.Location?,
     isSelected: Boolean,
     onSelectionChanged: (Boolean) -> Unit,
-    onNavigate: (Double, Double) -> Unit
+    onNavigate: (Double, Double) -> Unit,
+    onRatingSubmitted: () -> Unit
 ) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clickable { showDialog = true },
+            .clickable { 
+                // Reset all states when opening dialog for a new place
+                showDialog = true 
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -888,7 +1044,7 @@ fun PlaceCard(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(place.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(place.type, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                Text(place.type, fontSize = 13.sp, color = Color.Black, fontWeight = FontWeight.Bold)
                 Text(place.description, fontSize = 12.sp, maxLines = 2)
             }
             Checkbox(
@@ -899,15 +1055,18 @@ fun PlaceCard(
     }
 
     if (showDialog) {
-        var ratingInput by remember { mutableStateOf(1) }
-        var submitting by remember { mutableStateOf(false) }
-        var error by remember { mutableStateOf<String?>(null) }
-        val toastMessage = remember { mutableStateOf<String?>(null) }
-        val appViewModel: PlaceViewModel = viewModel() // get main places viewmodel
+        var ratingInput by remember(place.id) { mutableStateOf(1) }
+        var submitting by remember(place.id) { mutableStateOf(false) }
+        var error by remember(place.id) { mutableStateOf<String?>(null) }
+        
         val ratingViewModel: RatingViewModel = viewModel(factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return RatingViewModel(onRatingSubmitted = { appViewModel.fetchPlacesForCity(place.id) }) as T
+                return RatingViewModel(onRatingSubmitted = { 
+                    onRatingSubmitted() // Use the callback to refresh places
+                    showDialog = false // Close the dialog after successful rating
+                    Toast.makeText(context, "Rating submitted successfully!", Toast.LENGTH_SHORT).show()
+                }) as T
             }
         })
 
@@ -968,15 +1127,16 @@ fun PlaceCard(
                     }
                     Button(
                         onClick = {
+                            submitting = true
                             ratingViewModel.submitRating(place.id, ratingInput.toDouble())
                         },
-                        enabled = !ratingViewModel.submitting,
+                        enabled = !submitting,
                         modifier = Modifier
                             .padding(top = 8.dp)
                             .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text(if (ratingViewModel.submitting) "Submitting..." else "Submit Rating", color = MaterialTheme.colorScheme.onPrimary)
+                        Text(if (submitting) "Submitting..." else "Submit Rating", color = MaterialTheme.colorScheme.onPrimary)
                     }
                     ratingViewModel.errorMessage?.let { error ->
                         Text(error, color = MaterialTheme.colorScheme.error)
