@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface PlaceRepository : JpaRepository<Place, Long> {
-    fun findByCityId(cityId: Long): List<Place>
+    fun findByCity_Id(cityId: Long): List<Place>
 }

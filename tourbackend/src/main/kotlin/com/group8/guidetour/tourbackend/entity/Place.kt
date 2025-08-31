@@ -15,7 +15,8 @@ data class Place(
     val isFree: Boolean,
     var description: String = "",
     var photoUrl: String? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "city_id")
-    val city: City
+    val city: City,
+    var rating: Double = 0.0
 ) 
