@@ -62,6 +62,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
 import com.google.android.gms.maps.MapsInitializer
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import kotlinx.coroutines.launch
+import retrofit2.http.Body
+import retrofit2.http.POST
+import retrofit2.http.Headers
+import retrofit2.Response
+import androidx.compose.ui.text.style.TextDecoration
 
 
 // Utility function for place type icon
@@ -155,51 +163,171 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+data class LoginRequest(val usernameOrEmail: String, val password: String)
+data class User(val id: Long, val username: String, val email: String)
+data class RegisterRequest(val username: String, val email: String, val password: String)
+
+interface AuthApiService {
+    @POST("/api/users/login")
+    @Headers("Content-Type: application/json")
+    suspend fun login(@Body request: LoginRequest): Response<User>
+
+    @POST("/api/users/register")
+    @Headers("Content-Type: application/json")
+    suspend fun register(@Body request: RegisterRequest): Response<User>
+}
+
+@Composable
+fun RegisterScreen(onRegisterSuccess: (User) -> Unit, onBack: () -> Unit) {
+    val context = LocalContext.current
+    var username by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val retrofit = remember {
+        Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8080/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    val authApi = remember { retrofit.create(AuthApiService::class.java) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Register", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = {
+                loading = true
+                errorMessage = null
+                coroutineScope.launch {
+                    try {
+                        val response = authApi.register(RegisterRequest(username, email, password))
+                        if (response.isSuccessful && response.body() != null) {
+                            // Instead of logging in, go back to login screen
+                            onBack()
+                        } else {
+                            errorMessage = "Registration failed"
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = "Registration failed: ${e.message}"
+                    } finally {
+                        loading = false
+                    }
+                }
+            },
+            enabled = !loading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (loading) "Registering..." else "Register")
+        }
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            "Back to Login",
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+            modifier = Modifier.clickable { onBack() }
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityExplorerApp() {
-    val navController = rememberNavController()
-    
-    NavHost(navController = navController, startDestination = "cities") {
-        composable("cities") {
-            CityExplorerScreen(navController)
-        }
-        composable(
-            "places/{cityId}",
-            arguments = listOf(navArgument("cityId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val cityId = backStackEntry.arguments?.getLong("cityId") ?: 0L
-            PlacesScreen(cityId, navController)
-        }
-        composable(
-            "weatherDetail/{cityName}",
-            arguments = listOf(navArgument("cityName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
-            val weatherApi = Retrofit.Builder()
-                .baseUrl("https://api.weatherapi.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(WeatherApiService::class.java)
-            val forecastViewModel: WeatherForecastViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    @Suppress("UNCHECKED_CAST")
-                    return WeatherForecastViewModel(weatherApi, "bdfdb5adccc243d192a154654253008") as T
-                }
-            })
-            val forecast by forecastViewModel.forecastDays.collectAsState()
-            val loading by forecastViewModel.loading.collectAsState()
-            val error by forecastViewModel.error.collectAsState()
-            LaunchedEffect(cityName) {
-                forecastViewModel.fetchForecast(cityName, days = 7)
-            }
-            ForecastScreen(
-                cityName = cityName,
-                forecast = forecast,
-                loading = loading,
-                error = error,
-                onBack = { navController.popBackStack() }
+    var loggedInUser by rememberSaveable { mutableStateOf<User?>(null) }
+    var showRegister by rememberSaveable { mutableStateOf(false) }
+    if (loggedInUser == null) {
+        if (showRegister) {
+            RegisterScreen(
+                onRegisterSuccess = { /* unused, handled in RegisterScreen */ },
+                onBack = { showRegister = false }
             )
+        } else {
+            LoginScreen(
+                onLoginSuccess = { user -> loggedInUser = user },
+                onRegisterClick = { showRegister = true }
+            )
+        }
+    } else {
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = "cities") {
+            composable("cities") {
+                CityExplorerScreen(navController)
+            }
+            composable(
+                "places/{cityId}",
+                arguments = listOf(navArgument("cityId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val cityId = backStackEntry.arguments?.getLong("cityId") ?: 0L
+                PlacesScreen(cityId, navController)
+            }
+            composable(
+                "weatherDetail/{cityName}",
+                arguments = listOf(navArgument("cityName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
+                val weatherApi = Retrofit.Builder()
+                    .baseUrl("https://api.weatherapi.com/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+                    .create(WeatherApiService::class.java)
+                val forecastViewModel: WeatherForecastViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return WeatherForecastViewModel(weatherApi, "bdfdb5adccc243d192a154654253008") as T
+                    }
+                })
+                val forecast by forecastViewModel.forecastDays.collectAsState()
+                val loading by forecastViewModel.loading.collectAsState()
+                val error by forecastViewModel.error.collectAsState()
+                LaunchedEffect(cityName) {
+                    forecastViewModel.fetchForecast(cityName, days = 7)
+                }
+                ForecastScreen(
+                    cityName = cityName,
+                    forecast = forecast,
+                    loading = loading,
+                    error = error,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }
@@ -261,33 +389,43 @@ fun CityExplorerScreen(navController: androidx.navigation.NavController) {
                     )
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(cities ?: emptyList()) { city ->
-                        Column {
-                            CityCard(
-                                city = city,
-                                onClick = {
-                                    navController.navigate("places/${city.id}")
-                                }
-                            )
-                            val cityWeatherViewModel: WeatherViewModel = viewModel(
-                                key = "weather_${city.name}",
-                                factory = object : ViewModelProvider.Factory {
-                                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                                        @Suppress("UNCHECKED_CAST")
-                                        return WeatherViewModel(weatherApi, "bdfdb5adccc243d192a154654253008") as T
+                val cityList = cities ?: emptyList()
+                if (cityList.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No cities available.", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(cityList) { city ->
+                            Column {
+                                CityCard(
+                                    city = city,
+                                    onClick = {
+                                        navController.navigate("places/${city.id}")
                                     }
-                                }
-                            )
-                            CityWeatherCard(
-                                weatherViewModel = cityWeatherViewModel,
-                                cityName = city.name,
-                                navController = navController
-                            )
+                                )
+                                val cityWeatherViewModel: WeatherViewModel = viewModel(
+                                    key = "weather_${city.name}",
+                                    factory = object : ViewModelProvider.Factory {
+                                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                                            @Suppress("UNCHECKED_CAST")
+                                            return WeatherViewModel(weatherApi, "bdfdb5adccc243d192a154654253008") as T
+                                        }
+                                    }
+                                )
+                                CityWeatherCard(
+                                    weatherViewModel = cityWeatherViewModel,
+                                    cityName = city.name,
+                                    navController = navController
+                                )
+                            }
                         }
                     }
                 }
@@ -766,5 +904,85 @@ fun PlaceCard(
             )
         }
     }
-    // ...existing code...
+}
+
+@Composable
+fun LoginScreen(onLoginSuccess: (User) -> Unit, onRegisterClick: () -> Unit) {
+    val context = LocalContext.current
+    var usernameOrEmail by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val retrofit = remember {
+        Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8080/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    val authApi = remember { retrofit.create(AuthApiService::class.java) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Login", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedTextField(
+            value = usernameOrEmail,
+            onValueChange = { usernameOrEmail = it },
+            label = { Text("Username or Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = {
+                loading = true
+                errorMessage = null
+                coroutineScope.launch {
+                    try {
+                        val response = authApi.login(LoginRequest(usernameOrEmail, password))
+                        if (response.isSuccessful && response.body() != null) {
+                            onLoginSuccess(response.body()!!)
+                        } else {
+                            errorMessage = "Invalid credentials"
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = "Login failed: ${e.message}"
+                    } finally {
+                        loading = false
+                    }
+                }
+            },
+            enabled = !loading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (loading) "Logging in..." else "Login")
+        }
+        errorMessage?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            "Register",
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+            modifier = Modifier.clickable { onRegisterClick() }
+        )
+    }
 }
