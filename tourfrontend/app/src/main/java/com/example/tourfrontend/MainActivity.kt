@@ -899,20 +899,39 @@ fun PlaceCard(
     }
 
     if (showDialog) {
-        var ratingInput by remember { mutableStateOf("") }
+        var ratingInput by remember { mutableStateOf(1) }
         var submitting by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<String?>(null) }
         val toastMessage = remember { mutableStateOf<String?>(null) }
-        val viewModel: RatingViewModel = viewModel()
+        val appViewModel: PlaceViewModel = viewModel() // get main places viewmodel
+        val ratingViewModel: RatingViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return RatingViewModel(onRatingSubmitted = { appViewModel.fetchPlacesForCity(place.id) }) as T
+            }
+        })
 
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = {
-                Text(
-                    text = place.name,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (place.photoUrl != null) {
+                        AsyncImage(
+                            model = place.photoUrl,
+                            contentDescription = "Photo of ${place.name}",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .padding(bottom = 8.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Text(
+                        text = place.name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             },
             text = {
                 Column {
@@ -922,46 +941,55 @@ fun PlaceCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    if (place.photoUrl != null) {
-                        AsyncImage(
-                            model = place.photoUrl,
-                            contentDescription = "Photo of ${place.name}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text("Current Rating: ${"%.1f".format(place.rating)}", fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = ratingInput,
-                        onValueChange = { ratingInput = it },
-                        label = { Text("Submit Rating (0-5)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    // Dropdown for rating selection
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        OutlinedButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Select Rating: $ratingInput")
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            (1..5).forEach { value ->
+                                DropdownMenuItem(onClick = {
+                                    ratingInput = value
+                                    expanded = false
+                            }, text = { Text("$value") })
+                        }
+                    }
+                    }
                     error?.let {
                         Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                     }
                     Button(
                         onClick = {
-                            viewModel.submitRating(place.id, ratingInput.toDoubleOrNull())
+                            ratingViewModel.submitRating(place.id, ratingInput.toDouble())
                         },
-                        enabled = !viewModel.submitting,
-                        modifier = Modifier.padding(top = 8.dp)
+                        enabled = !ratingViewModel.submitting,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text(if (viewModel.submitting) "Submitting..." else "Submit Rating")
+                        Text(if (ratingViewModel.submitting) "Submitting..." else "Submit Rating", color = MaterialTheme.colorScheme.onPrimary)
                     }
-                    viewModel.errorMessage?.let { error ->
+                    ratingViewModel.errorMessage?.let { error ->
                         Text(error, color = MaterialTheme.colorScheme.error)
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Close")
+                Button(
+                    onClick = { showDialog = false },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Close", color = MaterialTheme.colorScheme.onSecondary)
                 }
             }
         )
