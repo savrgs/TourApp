@@ -63,6 +63,7 @@ import android.util.Log
 import com.google.android.gms.maps.MapsInitializer
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import kotlinx.coroutines.launch
 import retrofit2.http.Body
@@ -271,21 +272,22 @@ fun RegisterScreen(onRegisterSuccess: (User) -> Unit, onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityExplorerApp() {
-    var loggedInUser by rememberSaveable { mutableStateOf<User?>(null) }
-    var showRegister by rememberSaveable { mutableStateOf(false) }
-    if (loggedInUser == null) {
-        if (showRegister) {
-            RegisterScreen(
-                onRegisterSuccess = { /* unused, handled in RegisterScreen */ },
-                onBack = { showRegister = false }
-            )
+        val appViewModel: AppViewModel = viewModel()
+        val loggedInUser = appViewModel.loggedInUser.value
+        val showRegister = appViewModel.showRegister.value
+        if (loggedInUser == null) {
+            if (showRegister) {
+                RegisterScreen(
+                    onRegisterSuccess = { /* unused, handled in RegisterScreen */ },
+                    onBack = { appViewModel.showRegister.value = false }
+                )
+            } else {
+                LoginScreen(
+                    onLoginSuccess = { user -> appViewModel.loggedInUser.value = user },
+                    onRegisterClick = { appViewModel.showRegister.value = true }
+                )
+            }
         } else {
-            LoginScreen(
-                onLoginSuccess = { user -> loggedInUser = user },
-                onRegisterClick = { showRegister = true }
-            )
-        }
-    } else {
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = "cities") {
             composable("cities") {
@@ -725,36 +727,45 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 Spacer(modifier = Modifier.height(8.dp))
             }
             // Scrollable list of filtered places
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(filteredPlaces) { place ->
-                    PlaceCard(
-                        place = place,
-                        userLocation = userLocation,
-                        isSelected = selectedPlaces.contains(place.id),
-                        onSelectionChanged = { isSelected ->
-                            selectedPlaces = if (isSelected) selectedPlaces + place.id else selectedPlaces - place.id
-                        },
-                        onNavigate = { destinationLat, destinationLon ->
-                            if (userLocation != null) {
-                                val uri = Uri.parse(
-                                    "https://www.google.com/maps/dir/?api=1" +
-                                    "&origin=${userLocation!!.latitude},${userLocation!!.longitude}" +
-                                    "&destination=$destinationLat,$destinationLon" +
-                                    "&travelmode=walking"
-                                )
-                                val intent = Intent(Intent.ACTION_VIEW, uri)
-                                intent.setPackage("com.google.android.apps.maps")
-                                try {
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    val browserIntent = Intent(Intent.ACTION_VIEW, uri)
-                                    context.startActivity(browserIntent)
+            if (filteredPlaces.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No places available for this city.", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(filteredPlaces) { place ->
+                        PlaceCard(
+                            place = place,
+                            userLocation = userLocation,
+                            isSelected = selectedPlaces.contains(place.id),
+                            onSelectionChanged = { isSelected ->
+                                selectedPlaces = if (isSelected) selectedPlaces + place.id else selectedPlaces - place.id
+                            },
+                            onNavigate = { destinationLat, destinationLon ->
+                                if (userLocation != null) {
+                                    val uri = Uri.parse(
+                                        "https://www.google.com/maps/dir/?api=1" +
+                                        "&origin=${userLocation!!.latitude},${userLocation!!.longitude}" +
+                                        "&destination=$destinationLat,$destinationLon" +
+                                        "&travelmode=walking"
+                                    )
+                                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                                    intent.setPackage("com.google.android.apps.maps")
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+                                        context.startActivity(browserIntent)
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
                                 }
-                            } else {
-                                Toast.makeText(context, "Location not available", Toast.LENGTH_SHORT).show()
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

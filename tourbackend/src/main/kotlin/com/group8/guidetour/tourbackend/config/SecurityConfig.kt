@@ -17,7 +17,7 @@ class SecurityConfig {
                     "/api/users/login",
                     "/api/cities",
                     "/api/cities/*",
-                    "/api/cities/**/places"
+                        "/api/cities/*/places"
                 ).permitAll()
                 it.anyRequest().authenticated()
             }

@@ -24,7 +24,7 @@ class CityController(
 
     @GetMapping("/cities/{id}/places")
     fun getPlacesByCityId(@PathVariable id: Long): List<PlaceDTO> =
-        placeRepository.findByCityId(id).map { place ->
+        placeRepository.findByCity_Id(id).map { place ->
             PlaceDTO(
                 id = place.id,
                 name = place.name,
@@ -32,7 +32,7 @@ class CityController(
                 latitude = place.latitude,
                 longitude = place.longitude,
                 isFree = place.isFree,
-                cityName = place.city.name,
+                cityName = place.city?.name ?: "Unknown",
                 description = place.description,
                 photoUrl = place.photoUrl
             )
