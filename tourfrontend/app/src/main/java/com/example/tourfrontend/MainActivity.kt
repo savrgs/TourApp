@@ -37,10 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -71,6 +67,7 @@ import retrofit2.http.POST
 import retrofit2.http.Headers
 import retrofit2.Response
 import androidx.compose.ui.text.style.TextDecoration
+import com.example.tourfrontend.RatingViewModel
 
 
 // Utility function for place type icon
@@ -94,7 +91,8 @@ fun MapViewComponent(
     cityLat: Double,
     cityLon: Double,
     userLocation: android.location.Location? = null,
-    trafficEnabled: Boolean = false
+    trafficEnabled: Boolean = false,
+    modifier: Modifier = Modifier // Accept modifier
 ) {
     val initialCenter = if (showUserLocation && userLocation != null) {
         LatLng(userLocation.latitude, userLocation.longitude)
@@ -105,20 +103,15 @@ fun MapViewComponent(
         position = CameraPosition(initialCenter, 12f, 0f, 0f)
     }
 
-    // If user location updates, animate camera to user
+    // Animate camera to user location if available
     LaunchedEffect(userLocation) {
         if (showUserLocation && userLocation != null) {
-            val cameraUpdate = com.google.android.gms.maps.CameraUpdateFactory.newCameraPosition(
-                CameraPosition(LatLng(userLocation.latitude, userLocation.longitude), 12f, 0f, 0f)
-            )
-            cameraPositionState.animate(cameraUpdate)
+            cameraPositionState.position = CameraPosition(LatLng(userLocation.latitude, userLocation.longitude), 12f, 0f, 0f)
         }
     }
 
     GoogleMap(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
+        modifier = modifier,
         cameraPositionState = cameraPositionState,
         properties = MapProperties(
             isMyLocationEnabled = showUserLocation,
@@ -265,6 +258,95 @@ fun RegisterScreen(onRegisterSuccess: (User) -> Unit, onBack: () -> Unit) {
             color = MaterialTheme.colorScheme.primary,
             textDecoration = TextDecoration.Underline,
             modifier = Modifier.clickable { onBack() }
+        )
+    }
+}
+
+@Composable
+fun LoginScreen(onLoginSuccess: (User) -> Unit, onRegisterClick: () -> Unit) {
+    val context = LocalContext.current
+    var usernameOrEmail by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val retrofit = remember {
+        Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8080/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    val authApi = remember { retrofit.create(AuthApiService::class.java) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Login", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedTextField(
+            value = usernameOrEmail,
+            onValueChange = { usernameOrEmail = it },
+            label = { Text("Username or Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = {
+                loading = true
+                errorMessage = null
+                coroutineScope.launch {
+                    try {
+                        val response = authApi.login(LoginRequest(usernameOrEmail, password))
+                        if (response.isSuccessful && response.body() != null) {
+                            onLoginSuccess(response.body()!!)
+                        } else {
+                            errorMessage = "Password incorrect"
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = "Login failed: ${e.message}"
+                    } finally {
+                        loading = false
+                    }
+                }
+            },
+            enabled = !loading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (loading) "Logging in..." else "Login")
+        }
+        if (errorMessage == "Password incorrect") {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.align(Alignment.Start)
+            )
+        } else if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            "Register",
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+            modifier = Modifier.clickable { onRegisterClick() }
         )
     }
 }
@@ -528,8 +610,8 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
     val allTypes: List<String> = places?.map { it.type }?.distinct()?.sorted() ?: emptyList()
 
     val filteredPlaces: List<PlaceDto> =
-        if (selectedTypes.isEmpty()) places ?: emptyList()
-        else places?.filter { selectedTypes.contains(it.type) } ?: emptyList()
+    if (selectedTypes.isEmpty()) places ?: emptyList()
+    else places?.filter { selectedTypes.contains(it.type) } ?: emptyList()
 
     // Location services
     val context = LocalContext.current
@@ -621,7 +703,7 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 }
             }
             // Map at top, fixed height
-            val selectedPlaceObjects = places?.filter { selectedPlaces.contains(it.id) } ?: emptyList()
+            val selectedPlaceObjects: List<PlaceDto> = places?.filter { selectedPlaces.contains(it.id) } ?: emptyList()
             val optimizedPlaces: List<PlaceDto> = optimizeRoute(userLocation, selectedPlaceObjects)
             MapViewComponent(
                 places = optimizedPlaces,
@@ -629,7 +711,10 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
                 cityLat = cityLat,
                 cityLon = cityLon,
                 userLocation = userLocation,
-                trafficEnabled = trafficEnabled
+                trafficEnabled = trafficEnabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp) // Fixed height for map
             )
             Spacer(modifier = Modifier.height(8.dp))
             // Selection Summary
@@ -729,13 +814,13 @@ fun PlacesScreen(cityId: Long, navController: androidx.navigation.NavController)
             // Scrollable list of filtered places
             if (filteredPlaces.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f), // Use weight for empty state too
                     contentAlignment = Alignment.Center
                 ) {
                     Text("No places available for this city.", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(modifier = Modifier.weight(1f)) {
                     items(filteredPlaces) { place ->
                         PlaceCard(
                             place = place,
@@ -784,7 +869,42 @@ fun PlaceCard(
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clickable { showDialog = true },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Use icon for place type instead of photo
+            Text(
+                getPlaceTypeIcon(place.type),
+                fontSize = 32.sp,
+                modifier = Modifier.padding(end = 12.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(place.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(place.type, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                Text(place.description, fontSize = 12.sp, maxLines = 2)
+            }
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = onSelectionChanged
+            )
+        }
+    }
+
     if (showDialog) {
+        var ratingInput by remember { mutableStateOf("") }
+        var submitting by remember { mutableStateOf(false) }
+        var error by remember { mutableStateOf<String?>(null) }
+        val toastMessage = remember { mutableStateOf<String?>(null) }
+        val viewModel: RatingViewModel = viewModel()
+
         AlertDialog(
             onDismissRequest = { showDialog = false },
             title = {
@@ -812,6 +932,31 @@ fun PlaceCard(
                             contentScale = ContentScale.Crop
                         )
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Current Rating: ${"%.1f".format(place.rating)}", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = ratingInput,
+                        onValueChange = { ratingInput = it },
+                        label = { Text("Submit Rating (0-5)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    error?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    }
+                    Button(
+                        onClick = {
+                            viewModel.submitRating(place.id, ratingInput.toDoubleOrNull())
+                        },
+                        enabled = !viewModel.submitting,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(if (viewModel.submitting) "Submitting..." else "Submit Rating")
+                    }
+                    viewModel.errorMessage?.let { error ->
+                        Text(error, color = MaterialTheme.colorScheme.error)
+                    }
                 }
             },
             confirmButton = {
@@ -821,179 +966,5 @@ fun PlaceCard(
             }
         )
     }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Place type icon
-            Text(
-                text = getPlaceTypeIcon(place.type),
-                fontSize = 24.sp,
-                modifier = Modifier.padding(end = 12.dp)
-            )
-            // Place details
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = place.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 28.sp
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "${place.type} • ${if (place.isFree) "Free" else "Paid"}",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = place.description,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 18.sp,
-                    maxLines = 5
-                )
-            }
-            // Info icon
-            IconButton(
-                onClick = { showDialog = true },
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "More info about ${place.name}",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            // Selection checkbox
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = onSelectionChanged,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.outline
-                )
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        // Navigate button
-        Button(
-            onClick = { onNavigate(place.latitude, place.longitude) },
-            modifier = Modifier.align(Alignment.End),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3)
-            ),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-            shape = MaterialTheme.shapes.small
-        ) {
-            Icon(
-                imageVector = Icons.Default.Navigation,
-                contentDescription = "Navigate to ${place.name}",
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Navigate",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
 }
 
-@Composable
-fun LoginScreen(onLoginSuccess: (User) -> Unit, onRegisterClick: () -> Unit) {
-    val context = LocalContext.current
-    var usernameOrEmail by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
-    val retrofit = remember {
-        Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-    val authApi = remember { retrofit.create(AuthApiService::class.java) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Login", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(24.dp))
-        OutlinedTextField(
-            value = usernameOrEmail,
-            onValueChange = { usernameOrEmail = it },
-            label = { Text("Username or Email") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = {
-                loading = true
-                errorMessage = null
-                coroutineScope.launch {
-                    try {
-                        val response = authApi.login(LoginRequest(usernameOrEmail, password))
-                        if (response.isSuccessful && response.body() != null) {
-                            onLoginSuccess(response.body()!!)
-                        } else {
-                            errorMessage = "Invalid credentials"
-                        }
-                    } catch (e: Exception) {
-                        errorMessage = "Login failed: ${e.message}"
-                    } finally {
-                        loading = false
-                    }
-                }
-            },
-            enabled = !loading,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(if (loading) "Logging in..." else "Login")
-        }
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            "Register",
-            color = MaterialTheme.colorScheme.primary,
-            textDecoration = TextDecoration.Underline,
-            modifier = Modifier.clickable { onRegisterClick() }
-        )
-    }
-}

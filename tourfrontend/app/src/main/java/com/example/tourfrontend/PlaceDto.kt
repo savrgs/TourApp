@@ -9,5 +9,6 @@ data class PlaceDto(
     val isFree: Boolean,
     val cityName: String,
     val description: String,
-    val photoUrl: String? = null
-) 
+    val photoUrl: String? = null,
+    val rating: Double = 0.0
+)

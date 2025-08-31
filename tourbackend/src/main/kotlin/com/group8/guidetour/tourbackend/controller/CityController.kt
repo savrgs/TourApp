@@ -34,7 +34,26 @@ class CityController(
                 isFree = place.isFree,
                 cityName = place.city?.name ?: "Unknown",
                 description = place.description,
-                photoUrl = place.photoUrl
+                photoUrl = place.photoUrl,
+                rating = place.rating
             )
         }
+    @PostMapping("/places/{id}/rate")
+    fun ratePlace(@PathVariable id: Long, @RequestParam rating: Double): PlaceDTO {
+        val place = placeRepository.findById(id).orElseThrow { RuntimeException("Place not found") }
+        place.rating = rating
+        placeRepository.save(place)
+        return PlaceDTO(
+            id = place.id,
+            name = place.name,
+            type = place.type,
+            latitude = place.latitude,
+            longitude = place.longitude,
+            isFree = place.isFree,
+            cityName = place.city?.name ?: "Unknown",
+            description = place.description,
+            photoUrl = place.photoUrl,
+            rating = place.rating
+        )
+    }
 }
